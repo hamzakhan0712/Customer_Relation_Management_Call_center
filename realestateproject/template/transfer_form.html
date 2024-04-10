@@ -1,0 +1,23 @@
+<form method="post" action="{% url 'transfer_leads' %}">
+  {% csrf_token %}
+  <input type="hidden" name="lead_id" value="{{ lead_id }}">
+  <input type="hidden" name="transfer_to" value="{{ transfer_to }}">
+
+  {% if transfer_to == 'team_leader' %}
+  <select name="team_leader" id="team_leader">
+    <option value="">-- Select Team Leader --</option>
+    {% for team_leader in team_leaders %}
+    <option value="{{ team_leader.id }}">{{ team_leader.first_name }} {{ team_leader.last_name }}</option>
+    {% endfor %}
+  </select>
+  {% elif transfer_to == 'agent' %}
+  <select name="agent" id="agent">
+    <option value="">-- Select Agent --</option>
+    {% for agent in agents %}
+    <option value="{{ agent.id }}">{{ agent.first_name }} {{ agent.last_name }}</option>
+    {% endfor %}
+  </select>
+  {% endif %}
+
+  <button type="submit">Transfer</button>
+</form>

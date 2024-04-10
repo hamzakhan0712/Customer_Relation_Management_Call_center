@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- Dashboard(Admin)
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .top-container{
+        display: flex;
+        gap: 1rem;
+    }
+
+    .top-left{
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .tab-container {
+      display: flex;
+      justify-content: center;
+      margin: auto;
+      margin-top: 4rem;
+      margin-bottom: 1rem;
+      gap: 2rem;
+    }
+  
+    .tab {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid #0022ff;
+      border-radius: 5px;
+    }
+  
+    .chart-container {
+      margin: auto;
+      margin-top: 4rem;
+      width: 100%;
+      flex: 1;
+    }
+  
+    .chart {
+      display: none;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+  
+    .active-tab {
+      background-color: #0022ff2d;
+    }
+
+    .tab-head{
+        font-size: 20px;
+        margin-bottom: .5rem;
+        
+    }
+
+    .tab-data{
+        font-size: 16px;
+    }
+
+    .rupe{
+        font-size: 20px;
+        color: green;
+    }
+    .chart-label{
+        margin: 0;
+        width: max-content;
+    }
+    .tag{
+      font-size: 15px;
+    }
+
+  </style>
+  
+<div class="top-container">
+   <div class="top-left">
+        <div class="tab-container">
+            <div class="tab" onclick="showChart(1)">
+                <span class="tab-head">Total Sales</span>
+                <span class="tab-data"><span class="rupe">₹</span> {{ total_sales }}/-</span>
+            </div>
+            <div class="tab" onclick="showChart(2)">
+                <span class="tab-head">Paid Customers</span>
+                <span class="tab-data">{{ total_paid_customers }} Customer</span>
+            </div>
+            <div class="tab" onclick="showChart(3)">
+                <span class="tab-head">New Leads</span>
+                <span class="tab-data">{{ new_leads }} lead</span>
+            </div>
+            <div class="tab" onclick="showChart(4)">
+                <span class="tab-head">Performance</span>
+                <span class="tab-data">{{ overall_performance_percentage }} %</span>
+            </div>
+        </div>
+        <table border="1">
+    
+          <h2>Pending Work</h2>
+        
+          <tr>
+              <td>Pending Paid Customers</td>
+              <td>{{ pending_paid_customers_count }} Customers</td>
+          </tr>
+          <tr>
+              <td>Paused Marketing Campaigns</td>
+              <td>{{ paused_marketing_campaigns_count }} Campaigns</td>
+          </tr>
+          <tr>
+              <td>Pending Tasks</td>
+              <td>{{ pending_tasks_count }} Tasks</td>
+          </tr>
+          <tr>
+              <td>Contacted Leads</td>
+              <td>{{ contacted_leads_count }} Leads</td>
+          </tr>
+        </table>   
+          <br>
+          
+        <h2>Sales Analysis</h2>
+          <table>
+            <thead>
+                <tr>
+                    <th>Current Day</th>
+                    <th>Current Month</th>
+                    <th>Past 6 Months</th>
+                    <th>Past One Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                  <td><span class="rupe">₹</span> {{ current_day_sales }}/-</td>            
+                  <td><span class="rupe">₹</span> {{ current_month_sales }}/-</td>    
+                  <td><span class="rupe">₹</span> {{ past_6_months_sales }}/-</td>
+                  <td><span class="rupe">₹</span> {{ past_one_year_sales }}/-</td>
+                </tr>
+            </tbody>
+        </table>
+                 
+    </div>
+
+    <div class="chart-container">
+        <div class="chart active" id="chart1">
+            <p class="chart-label">Sales OverAll Look : </p>
+            <canvas id="salesChart"></canvas>
+        </div>
+        <div class="chart" id="chart2">
+            <p class="chart-label">Customer OverAll Look : </p>
+            <canvas id="paidCustomersChart"></canvas>
+        </div>
+        <div class="chart" id="chart3">
+            <p class="chart-label">Leads OverAll Look : </p>
+            <canvas id="leadStatusChart"></canvas>
+        </div>
+        <div class="chart" id="chart4">
+            <p class="chart-label">OverAll Performance : </p>
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+</div>
+<br>
+
+
+
+<h2>Recent Objects Table <span class="tag">(Yesterday & Today)</span></h2>
+<table>
+    <thead>
+        <tr>
+          <th>Object ID</th>
+          <th>Date</th>
+          <th>Name/Title</th>
+          <th>Object</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for model_name, objects_list in data.items %}
+            {% for object_data in objects_list %}
+                <tr>
+                  <td>{{ object_data.id }}</td>
+                  {% if object_data.joining_date %}
+                    <td>{{ object_data.joining_date }}</td>
+                    {% else %}
+                    <td>{{ object_data.date }}</td>
+                    {% endif %}
+                    {% if object_data.first_name %}
+                    <td>{{ object_data.first_name }}</td>
+                    {% else %}
+                    <td>{{ object_data.name }}</td>
+                    {% endif %}
+                    <td>{{ model_name }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+
+  <script>
+    function showChart(chartNumber) {
+      // Hide all charts and deactivate tabs
+      const charts = document.querySelectorAll(".chart");
+      charts.forEach((chart) => {
+        chart.style.display = "none";
+      });
+  
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach((tab) => {
+        tab.classList.remove("active-tab");
+      });
+  
+      // Show the selected chart and activate the corresponding tab
+      const selectedChart = document.getElementById(`chart${chartNumber}`);
+      selectedChart.style.display = "block";
+  
+      const selectedTab = document.querySelector(`.tab:nth-child(${chartNumber})`);
+      selectedTab.classList.add("active-tab");
+    }
+  
+    showChart(1);
+  </script>
+  
+
+
+
+<script>
+var chartData = JSON.parse('{{ sales_data_json|escapejs }}');
+var labels = chartData.map(item => item.payment_date);
+var salesData = chartData.map(item => parseFloat(item.amount_paid));
+var ctx = document.getElementById('salesChart').getContext('2d');
+var salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Sales',
+            data: salesData,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)', 
+            borderColor: 'rgba(54, 162, 235, 1)', 
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: 'rgba(70, 130, 180, 1)', 
+            pointHoverBackgroundColor: 'rgba(70, 130, 180, 1)', 
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'blue', // Set the legend text color to blue
+                    font: {
+                        size: 14
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+
+
+<script>
+    // Get the data from the JSON-encoded context variable
+    var paidCustomersChartData = JSON.parse('{{ paid_customers_chart_data|escapejs }}');
+  
+    // Create the bar chart
+    var ctx = document.getElementById('paidCustomersChart').getContext('2d');
+    var paidCustomersChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: paidCustomersChartData.labels,
+        datasets: [{
+          label: 'Paid Customers',
+          data: paidCustomersChartData.counts,
+          backgroundColor: [
+              'rgba(54, 162, 235, 0.2)', 
+              'rgba(153, 102, 255, 0.2)', 
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(255, 99, 132, 0.2)', 
+          
+        ],
+        borderColor: [
+            'rgba(54, 162, 235, 1)', 
+            'rgba(153, 102, 255, 1)', 
+            'rgba(75, 192, 192, 1)', 
+            'rgba(255, 99, 132, 1)', 
+          
+        ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              fontColor: 'black' // Customize font color of the legend
+            }
+          }
+        }
+      }
+    });
+  </script>
+  
+  <script>
+    // Get the data from the JSON-encoded context variable
+    var leadStatusChartData = JSON.parse('{{ lead_status_chart_data|escapejs }}');
+  
+    // Extract the labels and data for the pie chart
+    var leadStatusLabels = leadStatusChartData.labels;
+    var leadStatusData = leadStatusChartData.counts;
+  
+    // Create the pie chart
+    var ctx = document.getElementById('leadStatusChart').getContext('2d');
+    var leadStatusChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: leadStatusLabels,
+        datasets: [{
+          data: leadStatusData,
+          backgroundColor: [
+            'rgba(54, 162, 235, 0.2)', // Light blue for 'New'
+            'rgba(153, 102, 255, 0.2)', // Light purple for 'Contacted'
+            'rgba(75, 192, 192, 0.2)',  // Light green for 'Converted'
+            'rgba(255, 99, 132, 0.2)', // Light red for 'Lost'
+          ],
+          borderColor: [
+            'rgba(54, 162, 235, 1)', // Blue for 'New'
+            'rgba(153, 102, 255, 1)', // Purple for 'Contacted'
+            'rgba(75, 192, 192, 1)',  // Green for 'Converted'
+            'rgba(255, 99, 132, 1)', // Red for 'Lost'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              fontColor: 'black' // Customize font color of the legend
+            }
+          }
+        }
+      }
+    });
+  </script>
+  
+  <script>
+    var performanceData = {
+        labels: ['Lead Conversion', 'Task Completion', 'Complaint Resolution', 'Marketing Success'],
+        datasets: [{
+            label: 'Performance Rate',
+            data: [{{ lead_conversion_rate }}, {{ task_completion_rate }}, {{ complaint_resolution_rate }}, {{ marketing_success_rate }}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(75, 192, 192, 0.2)',  
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    var ctx = document.getElementById('performanceChart').getContext('2d');
+    var performanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: performanceData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'blue', // Set the legend text color to blue
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+
+
+{% endblock %}

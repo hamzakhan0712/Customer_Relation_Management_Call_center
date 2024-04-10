@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- Tasks
+{% endblock %}
+
+
+{% block content %}
+<br>
+<br>
+<br>
+  <div class="form-container">
+  <form method="get" action="{% url 'task_list' %}">
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="filter" class="form-control" placeholder="Search by ID, name, or related contact" value="{{ filter }}">
+      </div>
+      <div class="">
+        <input type="date" name="due_date" class="form-control" placeholder="Due Date" value="{{ due_date }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+      </div>
+      <div class="">
+        <select name="orderby" class="form-control">
+          <option value="" selected disabled>Select Sorting</option>
+          <option value="id" {% if orderby == 'id' %}selected{% endif %}>Sort by ID</option>
+          <option value="due_date" {% if orderby == 'due_date' %}selected{% endif %}>Sort by Due Date</option>
+          <option value="assigned_to" {% if orderby == 'assigned_to' %}selected{% endif %}>Sort by Assigned To</option>
+        </select>
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+  
+  {% if user.role != 3 %}
+  <a class="add" href="#" id="leadLink"><i class="fas fa-regular fa-plus"></i> Task</a>
+  {% endif %}
+    
+</div>
+  
+<div class="modal" id="leadModal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <div class="modal-body">
+      {% include 'task_create.html' %}
+    </div>
+  </div>
+</div>
+
+  <table class="task-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Due Date</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Assigned To</th>
+        <th>Related Contact</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in object_list %}
+      <tr>
+        <td>{{ task.id }}</td>
+        <td>{{ task.due_date }}</td>
+        <td>{{ task.name }}</td>
+        <td>{{ task.get_task_type_display }}</td>
+        <td>{{ task.get_priority_display }}</td>
+        <td>{{ task.get_status_display }}</td>
+
+        <td>{{ task.assigned_to.teamleader.first_name }} {{ task.assigned_to.teamleader.last_name }}
+        {{ task.assigned_to.agent.first_name }} {{ task.assigned_to.agent.last_name }}</td>
+          
+        <td>{{ task.related_contact }}</td>
+        <td>{{ task.description }}</td>
+        <td>
+          <a class="edit-item" href="{% url 'task_update' task.pk %}"><i class="fas fa-edit"></i></a>
+          <a class="remove-item" href="#" data-modal-target="#deletetaskModal{{ task.pk }}"><i class="fas fa-trash"></i></a>
+          <div id="deletetaskModal{{ task.pk }}" class="modal-delete">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <h1>Delete Task</h1>
+              <p>Are you sure you want to delete the task "{{ task.name }}"?</p>
+              <form method="post" action="{% url 'task_delete' task.pk %}">
+                {% csrf_token %}
+                <a href="{% url 'task_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+      </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10">No tasks found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <div class="pagination">
+    {% if is_paginated %}
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      <span class="current-page">{{ page_obj.number }}</span>
+      <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      $('#leadLink').click(function(e) {
+        e.preventDefault();
+        $('#leadModal').fadeIn();
+      });
+    
+      $('.close').click(function() {
+        $('#leadModal').fadeOut();
+      });
+    });
+    $(document).ready(function() {
+      $('#taskCreateForm').on('keydown', 'input, select, textarea', function(e) {
+        var self = $(this);
+        var form = self.parents('form:eq(0)');
+        if (e.which === 13) {
+          e.preventDefault();
+          var focusable = form.find('input, select, textarea').filter(':visible');
+          var next = focusable.eq(focusable.index(this) + 1);
+          if (next.length) {
+            next.focus();
+          } else {
+            form.submit();
+          }
+        }
+      });
+    });
+    $(document).ready(function() {
+      // Open modal on remove-item click
+      $('.remove-item').on('click', function(e) {
+        e.preventDefault();
+        var modalTarget = $(this).data('modal-target');
+        $(modalTarget).fadeIn();
+      });
+    
+      // Close modal on close button click or outside click
+      $('.modal-delete .close').on('click', function() {
+        var modal = $(this).closest('.modal-delete');
+        modal.fadeOut();
+      });
+    
+      $('.modal-content').on('click', function(e) {
+        e.stopPropagation();
+      });
+    });;
+    
+    
+    </script>
+
+
+{% endblock %}

@@ -1,0 +1,419 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #00041d;
+  padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2rem;
+  z-index: 999;
+  border-bottom: 2px solid #0022ff;
+  box-shadow: 0 0 5px #0022ff;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  gap: .5rem;
+}
+
+.fa-bars{
+  font-size: 22px;
+  color: #cacaca;
+  font-weight: bold;
+  padding: 4px;
+  transition: .3s ease-in-out;
+  cursor: pointer;
+}
+
+.fa-bars:hover{
+  color: #ffffff;
+}
+
+.navbar-brand {
+  height: 1.8rem;
+  border-radius: 10px;
+  transition: .3s ease-in-out;
+  width: 120px;
+}
+
+.navbar-brand:hover {
+  cursor: pointer;
+}
+
+.menu-icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-right {
+  display: flex;
+  flex-direction: row;
+  justify-content: right;
+ align-items: center;
+  gap: .1rem;
+  margin-right: 1rem;
+}
+
+.nav-right > p{
+  color: white;
+  font-size: 18px;
+  text-transform: capitalize;
+}
+
+.sign-out{
+  margin: 15px 5px ;
+  padding: 5px;
+  color: darkred;
+  border: 1px solid darkred;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 12px;
+  transition: .3s color ease-in-out;
+}
+
+.sign-out:hover{
+  color: red;
+  border: 1px solid red;
+}
+
+.nav-link {
+  text-decoration: none;
+  font-size: 15px;
+  font-weight:normal;
+  color: white;
+  border: 1px solid #0022ff;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+#settings-icon{
+  color: #0022ff;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.sidebar {
+  width: 220px;
+  height: auto;
+  border: 1px solid #00041d;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  overflow-y: auto;
+  margin-top: 3rem;
+  transition: transform 0.5s ease-in-out;
+  transform: translateX(-100%);
+  background-color: #006eff0a;
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+}
+
+.sidebar.show {
+  transform: translateX(0);
+}
+
+.sidebar-ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  margin-top: 1rem;
+}
+
+.sidebar-li{
+  margin: 10px;
+  margin-bottom: 1rem;
+}
+
+.sidebar-link {
+  display: block;
+  padding: 5px 8px;
+  text-decoration: none;
+  font-size: 16px;
+  color: #00041d;
+  transition: all .3s ease-in-out;
+  border-radius: 5px;
+}
+
+.sidebar-link:hover{
+  color: #0022ff;
+  background: #ffffff;
+}
+
+.sidebar-link > i{
+  font-size: 15px;
+  text-align: left;
+  margin: 0 5px;
+}
+
+.fa-chevron-down{
+  font-size: 12px;
+  position: relative;
+  justify-content: center;
+}
+
+.sub-menu {
+  display: none;
+  position: relative;
+  top: 10%;
+  left: 0;
+  z-index: 100;
+  padding: 0;
+  margin: 10px;
+  margin-bottom: 1rem;
+  color: #0022ff;
+  border: 1px solid #00041d;
+  background: #ffffff;
+  border-radius: 5px;
+}
+
+.sub-menu li {
+  list-style: none;
+  margin: 10px;
+  margin-bottom: 1rem;
+}
+
+/* Style for submenu links */
+.sub-menu li a {
+  display: block;
+  color: #000;
+  text-decoration: none;
+  font-size: 16px;
+  padding:0px;
+  transition: all .3s ease-in-out;
+}
+
+/* Hover effect for submenu links */
+.sub-menu a:hover {
+  color: #0022ff;
+}
+
+/* Arrow icon */
+.sidebar-li .arrow-icon {
+  margin-left: 5px;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Arrow icon rotate on submenu toggle */
+.sidebar-li.open .arrow-icon {
+  transform: rotate(180deg);
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 0px;
+  background-color: white;
+  
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #00041d;
+  border-radius: 3px;
+}
+
+ /* Message Block Styles */
+ .message-block {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  position: fixed;
+  top: 0px; /* Adjust the value according to the height of your navbar */
+  left: 50%;
+  transform: translateX(-50%);
+  width:auto; /* Adjust the width as per your requirement */
+  padding: 5px;
+  border-radius: 4px;
+  z-index: 9999;
+  color: black;
+}
+
+/* Add the slide-out class for animation */
+.message-block.slide-out {
+  transform: translateX(-50%) translateY(-100%);
+  opacity: 0;
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.messages{
+  margin: 0;
+  padding: 0;
+}
+
+.messages li{
+ list-style: none;
+ font-size: 14px;
+ margin: 10px 0;
+}
+
+.success {
+  color: #ffffff; /* Text color for success message */
+  background-color: #28a745; /* Background color for success message */
+  border: 2px solid #00ff3c; /* Border color for success message */
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.error {
+  color: #ffffff; /* Text color for error message */
+  background-color: #dc3545; /* Background color for error message */
+  border: 2px solid #ff0019; /* Border color for error message */
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.time-display {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.time-display::before {
+  content: attr(data-time);
+}
+
+.time-display::after {
+  content: none;
+}
+
+#tea-break {
+  position:fixed;
+  display: flex;
+  flex-direction: column;
+  top: 4.5rem;
+  right: -0px;
+  background: #FFDAB9;
+  border: 1px solid #FF4500;
+  border-right: none;
+  border-radius: 10px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  transform: translateY(-50%);
+  padding:5px;
+  z-index: 9999;
+  transition: right 0.5s;
+}
+
+.tea-break-icon {
+  cursor: pointer;
+  color: #000000; /* Orange color */
+  font-size: 14px !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  text-transform: capitalize !important;
+  text-align: center;
+}
+
+.fa-mug-hot{
+  color: orange;
+}
+
+.tea-break-content {
+  display: none;
+  margin-top: .2rem;
+}
+
+.break-con{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.st-st{
+  display: flex;
+  gap: .5rem;
+}
+
+.timer {
+  font-size: 16px;
+  margin: auto 5px;
+  color: black;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.buttons > button{
+  padding: 5px 8px!important;
+  background:#FFA500 ;
+  border: 1px solid #FF4500;
+}
+
+.buttons > button:active{
+  padding: 5px 8px!important;
+  background:#e29300 ;
+  border: 1px solid #b83100;
+}
+
+.buttons > button > i{
+   font-size: 10px !important;
+
+}
+
+@keyframes blink {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #ffd68b;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+ 
+.blinking {
+  animation: blink 1s infinite;
+  border-radius: 10px;
+}
+
+.notification-badge {
+  position: relative;
+  top: -15px;
+  left: 35px;
+  font-size: 10px;
+  background-color: red;
+  color: white;
+  padding:2px 6px;
+  border-radius: 50%;
+}
+
+.menu{
+  position: relative;
+  left: -15px !important;
+}
+
+.inbox{
+  margin: 0 .5rem;
+  color: white;
+  font-size: 22px;
+}
+
+.notification-count{
+  position: relative;
+  top: -15px;
+  left: -15px;
+  font-size: 10px;
+  background-color: red;
+  color: white;
+  padding:4px 6px;
+  border-radius: 50%;
+}
+
+.fa-envelope{
+  width: max-content;
+  margin: auto;
+  font-size: 18px;
+}
+

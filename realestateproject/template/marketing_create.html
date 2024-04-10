@@ -1,0 +1,56 @@
+<h2>Create Campaign</h2>
+<form id="marketingCreateForm" method="post" action="{% url 'marketing_create' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="id_date">Date</label>
+      <input type="date" name="date" id="id_date" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="id_name">Name</label>
+      <input type="text" name="name" id="id_name" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="id_campaign_type">Campaign Type</label>
+      <select name="campaign_type" id="id_campaign_type" class="form-control" required>
+        <option value="" disabled selected>-- Select Campaign Type --</option>
+        <option value="online">Online</option>
+        <option value="offline">Offline</option>
+        <option value="social_media">Social Media</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="id_campaign_objective">Campaign Objective</label>
+      <select name="campaign_objective" id="id_campaign_objective" class="form-control" required>
+        <option value="" disabled selected>-- Select Campaign Objective --</option>
+        <option value="lead_generation">Lead Generation</option>
+        <option value="brand_awareness">Brand Awareness</option>
+        <option value="sales_conversion">Sales Conversion</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="id_campaign_status">Campaign Status</label>
+      <select name="campaign_status" id="id_campaign_status" class="form-control" required>
+        <option value="" disabled selected>-- Select Campaign Status --</option>
+        <option value="active">Active</option>
+        <option value="paused">Paused</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="id_target_audience">Target Audience</label>
+      <input type="text" name="target_audience" id="id_target_audience" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="id_campaign_budget">Campaign Budget</label>
+      <input type="number" name="campaign_budget" id="id_campaign_budget" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="id_campaign_channels">Campaign Channels</label>
+      <input type="text" name="campaign_channels" id="id_campaign_channels" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+  
+

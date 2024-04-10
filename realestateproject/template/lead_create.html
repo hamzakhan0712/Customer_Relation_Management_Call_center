@@ -1,0 +1,174 @@
+<style>
+  .contact-info-list {
+    position: relative;
+  }
+
+  .contact-info-list ul.list-group {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 5px 0;
+    margin:0 ;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .contact-info-list ul.list-group li {
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  .contact-info-list ul.list-group li:hover {
+    background-color: #f5f5f5;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-2px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .contact-info-list ul.list-group li {
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  #contactinfoList {
+    display: none;
+  }
+
+
+  .highlight { 
+    color: #0022ff; 
+    font-weight: bold; 
+  }
+
+
+</style>
+
+
+<h2>Create Lead</h2>
+<form id="leadCreateForm" method="post" action="{% url 'lead_create' %}">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="id_date">Date</label>
+    <input type="date" name="date" id="id_date" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label for="id_name">Name</label>
+    <input type="text" name="name" id="id_name" class="form-control" required>
+  </div>
+
+  <div class="form-group">
+    <label for="id_contact_info">Contact Number</label>
+    <input type="text" name="contact_info" id="id_contact_info" class="form-control" placeholder="Enter contact Number..." required>
+    <!-- Hidden input field for storing the selected contact ID -->
+    <input type="hidden" name="contact_info" id="id_contact_info_id">
+    <div id="contactinfoList" class="contact-info-list">
+      <ul class="list-group" id="contactinfoListItems"></ul>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="id_source">Source</label>
+    <select name="source" id="id_source" class="form-control" required>
+      <option value="" selected disabled>Select Source</option>
+      <option value="internet">Via Internet</option>
+      <option value="email">Email Inquiry</option>
+      <option value="referral">Referral</option>
+      <option value="social_media">Social Media</option>
+      <option value="walk_in">Walk-in Customer</option>
+      <option value="website">Website</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="id_status">Status</label>
+    <select name="status" id="id_status" class="form-control" required>
+      <option value="" selected disabled>Select Status</option>
+      <option value="new">New</option>
+      <option value="contacted">Contacted</option>
+      <option value="converted">Converted</option>
+      <option value="lost">Lost</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="id_details">Details</label>
+    <textarea name="details" id="id_details" class="form-control" required></textarea>
+  </div>
+  <div class="form-group">
+    <label for="id_follow_up_actions">Follow Up Actions</label>
+    <select name="follow_up_actions" id="id_follow_up_actions" class="form-control"required>
+      <option value="" selected disabled>Select Follow Up</option>
+      {% for follow_up in custom_follow_up %}
+        <option value="{{ follow_up.id }}">{{ follow_up.name }}</option>
+      {% endfor %}
+    </select>
+  </div>    
+  <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+
+
+<script>
+  $(document).ready(function () {
+    // Function to handle the contact search and display the results
+    function filterContacts() {
+      var filterVal = $("#id_contact_info").val().toLowerCase().trim();
+      var contactList = $("#contactinfoListItems");
+
+      if (filterVal === '') {
+        // If the filter is empty, hide the list
+        $('#contactinfoList').hide();
+      } else {
+        // Clear previous list items
+        contactList.empty();
+
+        // Iterate over the filtered contacts and add them to the list
+        {% for contact in contacts %}
+          var contactName = "{{ contact.phone_number }}";
+          var contactId = "{{ contact.id }}";
+          var matchIndex = contactName.toLowerCase().indexOf(filterVal);
+          if (matchIndex !== -1) {
+            var highlightedName = contactName.substring(0, matchIndex) +
+              '<span class="highlight">' + contactName.substring(matchIndex, matchIndex + filterVal.length) + '</span>' +
+              contactName.substring(matchIndex + filterVal.length);
+            var listItem = $("<li></li>").html(highlightedName).addClass("list-group-item").attr('data-contact-id', contactId);
+            contactList.append(listItem);
+          }
+        {% endfor %}
+
+        // Show the list
+        $('#contactinfoList').show();
+      }
+    }
+
+    // Handle input event on the "Related Contact" input field
+    $("#id_contact_info").on("input", function () {
+      filterContacts();
+    });
+
+    // Handle click on a contact list item
+    $("#contactinfoListItems").on("click", "li", function () {
+      var selectedContactName = $(this).text();
+      var selectedContactId = $(this).attr('data-contact-id');
+      $("#id_contact_info").val(selectedContactName); // Set the selected contact name as the input value
+      $("#id_contact_info_id").val(selectedContactId); // Set the selected contact ID as the input value for contact ID
+      $('#contactinfoList').hide();
+    });
+
+    // Handle form submission
+  });
+</script>

@@ -1,0 +1,172 @@
+<style>
+    .related-contact-list {
+      position: relative;
+    }
+  
+    .related-contact-list ul.list-group {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 5px 0;
+      margin:0 ;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+  
+    .related-contact-list ul.list-group li {
+      cursor: pointer;
+      padding: 5px 10px;
+      transition: background-color 0.3s ease;
+    }
+  
+    .related-contact-list ul.list-group li:hover {
+      background-color: #f5f5f5;
+    }
+  
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-2px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  
+    .related-contact-list ul.list-group li {
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards;
+    }
+  
+    #relatedContactList {
+      display: none;
+    }
+  
+  
+    .highlight { 
+      color: #0022ff; 
+      font-weight: bold; 
+    }
+  </style>
+
+<h2>Create Complaint</h2>
+<form id="complaintCreateForm" method="post" action="{% url 'complaint_create' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="id_assigned_to">Assigned To</label>
+        <select name="assigned_to" id="id_assigned_to" class="form-control">
+          <option value="" selected disabled>Select Employee</option>
+          {% for user in users %}
+        {% if request.user.role == 1 %}
+          {% if user.team_leader_first_name and user.team_leader_last_name %}
+            <option value="{{ user.id }}">{{ user.team_leader_first_name }} {{ user.team_leader_last_name }} (Team Leader)</option>
+          {% elif user.agent_first_name and user.agent_last_name %}
+            <option value="{{ user.id }}">{{ user.agent_first_name }} {{ user.agent_last_name }} (Agent)</option>
+          {% else %}
+            <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }} (No Team Leader or Agent)</option>
+          {% endif %}
+        {% elif request.user.role == 2 %}
+          
+            {% if user.agent_first_name and user.agent_last_name %}
+              <option value="{{ user.id }}">{{ user.agent_first_name }} {{ user.agent_last_name }}</option>
+            {% endif %}
+
+        {% elif request.user.role == 3 %}
+            {% if user.agent_first_name and user.agent_last_name %}
+              <option value="{{ user.id }}">{{ user.agent_first_name }} {{ user.agent_last_name }}</option>
+            {% endif %}
+
+        {% endif %}
+      {% endfor %}
+        </select>
+      </div>
+    
+      <div class="form-group">
+        <label for="id_related_contact">Related Contact</label>
+        <input type="text" name="related_contact" id="id_related_contact" class="form-control" placeholder="Enter contact name..."required>
+        <!-- Hidden input field for storing the selected contact ID -->
+        <input type="hidden" name="related_contact" id="id_related_contact_id">
+        <div id="relatedContactList" class="related-contact-list">
+          <ul class="list-group" id="relatedContactListItems"></ul>
+        </div>
+      </div>
+
+    <div class="form-group">
+        <label for="id_complaint_text">Complaint Text</label>
+        <textarea rows="20" name="complaint_text" id="id_complaint_text" class="form-control" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="id_resolved">Resolved</label>
+        <select name="resolved" id="id_resolved" class="form-control" required>
+          <option value="" selected disabled>Select Status</option>
+            <option value="false">Unresolved</option>
+            <option value="true">Resolved</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+
+
+<script>
+    $(document).ready(function () {
+      // Function to handle the contact search and display the results
+      function filterContacts() {
+        var filterVal = $("#id_related_contact").val().toLowerCase().trim();
+        var contactList = $("#relatedContactListItems");
+  
+        if (filterVal === '') {
+          // If the filter is empty, hide the list
+          $('#relatedContactList').hide();
+        } else {
+          // Clear previous list items
+          contactList.empty();
+  
+          // Iterate over the filtered contacts and add them to the list
+          {% for contact in contacts %}
+            var contactName = "{{ contact.name }}";
+            var contactId = "{{ contact.id }}";
+            var matchIndex = contactName.toLowerCase().indexOf(filterVal);
+            if (matchIndex !== -1) {
+              var highlightedName = contactName.substring(0, matchIndex) +
+                '<span class="highlight">' + contactName.substring(matchIndex, matchIndex + filterVal.length) + '</span>' +
+                contactName.substring(matchIndex + filterVal.length);
+              var listItem = $("<li></li>").html(highlightedName).addClass("list-group-item").attr('data-contact-id', contactId);
+              contactList.append(listItem);
+            }
+          {% endfor %}
+  
+          // Show the list
+          $('#relatedContactList').show();
+        }
+      }
+  
+      // Handle input event on the "Related Contact" input field
+      $("#id_related_contact").on("input", function () {
+        filterContacts();
+      });
+  
+      // Handle click on a contact list item
+      $("#relatedContactListItems").on("click", "li", function () {
+        var selectedContactName = $(this).text();
+        var selectedContactId = $(this).attr('data-contact-id');
+        $("#id_related_contact").val(selectedContactName); // Set the selected contact name as the input value
+        $("#id_related_contact_id").val(selectedContactId); // Set the selected contact ID as the input value for contact ID
+        $('#relatedContactList').hide();
+      });
+    });
+  </script>
+  
+
+
+
+
+
+

@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- Contacts
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .notes{
+  resize: none;
+}
+
+.save-icon {
+  color: blue;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-size: 18px;
+}
+
+.save-icon.updated {
+  color: green;
+}
+
+.save-icon.fa-circle-check-green {
+  color: green;
+}
+
+textarea.changed {
+  border: 1px solid red; 
+}
+
+.sec_row{
+  display: flex;
+}
+
+
+</style>
+
+<br>
+<br>
+<br>
+<div class="form-container">
+  <form method="get" action="{% url 'contact_list' %}" class="">
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="filter" class="form-control" placeholder="Search"
+          value="{{ filter }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+      </div>
+      <div class="">
+        <select name="orderby" class="form-control">
+          <option value="" selected disabled>Select Sorting</option>
+          <option value="id" {% if orderby == 'id' %}selected{% endif %}>Sort by ID</option>
+          <option value="date" {% if orderby == 'date' %}selected{% endif %}>Sort by Date</option>
+          <option value="name" {% if orderby == 'name' %}selected{% endif %}>Sort by Name</option>
+        </select>
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+  
+  <div class="sec_row">
+    {% if user.role != 3 %}
+    <a class="add" id="leadLink" href="#"><i class="fas fa-regular fa-plus"></i> Contact</a>
+    {% endif %}
+  </div>
+</div>
+
+
+
+
+<div class="modal" id="leadModal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <div class="modal-body">
+      {% include 'contact_create.html' %}
+    </div>
+  </div>
+</div>
+
+
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Date</th>
+      <th>Full Name</th>
+      <th>E-mail Id</th>
+      <th>Number</th>
+      <th>Address</th>
+      <th>Occupation</th>
+      <th>Notes</th>
+      {% if user.role != 3 %}
+      <th>Actions</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for contact in object_list %}
+    <tr>
+      <td>{{ contact.id }}</td>
+      <td>{{ contact.date }}</td>
+      <td>{{ contact.name }}</td>
+      <td>{{ contact.email }}</td>
+      <td>{{ contact.phone_number }}</td>
+      <td>{{ contact.address }}</td>
+      <td>{{ contact.occupation }}</td>
+      <td>
+        {% if user.role != 3 %}
+            <textarea name="notes" id="notes-{{ contact.pk }}">{{ contact.notes }}</textarea>
+        {% else %}
+            {{ contact.notes }}
+        {% endif %}
+      </td>
+
+      {% if not user.role == 3 %}
+      <td>
+        {% if forloop.first %}
+        <a class="edit-item" href="{% url 'contact_update' contact.pk %}"><i class="fas fa-edit"></i></a>
+          <a class="remove-item" href="#" data-modal-target="#deleteFirstContactModal"><i class="fas fa-trash"></i></a>
+          <div id="deleteFirstContactModal" class="modal-delete">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <h1>Delete Contact</h1>
+              <p>Are you sure you want to delete the contact "{{ contact.name }}"?</p>
+              <form method="post" action="{% url 'contact_delete' contact.pk %}">
+                {% csrf_token %}
+                <a href="{% url 'contact_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+          <span class="save-icon fa-regular fa-circle-check" style="cursor: pointer;"></span>
+        {% else %}
+          <a class="edit-item" href="{% url 'contact_update' contact.pk %}"><i class="fas fa-edit"></i></a>
+          <a class="remove-item" href="#" data-modal-target="#deleteContactModal{{ contact.pk }}"><i
+              class="fas fa-trash"></i></a>
+          <div id="deleteContactModal{{ contact.pk }}" class="modal-delete">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <h1>Delete Contact</h1>
+              <p>Are you sure you want to delete the contact "{{ contact.name }}"?</p>
+              <form method="post" action="{% url 'contact_delete' contact.pk %}">
+                {% csrf_token %}
+                <a href="{% url 'contact_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+          <span class="save-icon fa-regular fa-circle-check" style="cursor: pointer;"></span>
+        {% endif %}
+      </td>
+      {% endif %}
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="12">No contacts found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+
+
+<div class="pagination">
+  {% if is_paginated %}
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="current-page">{{ page_obj.number }}</span>
+  <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+  {% endif %}
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#leadLink').click(function (e) {
+      e.preventDefault();
+      $('#leadModal').fadeIn();
+    });
+
+    $('.close').click(function () {
+      $('#leadModal').fadeOut();
+    });
+  });
+  $(document).ready(function () {
+    $('#contactCreateForm').on('keydown', 'input, select, textarea', function (e) {
+      var self = $(this);
+      var form = self.parents('form:eq(0)');
+      if (e.which === 13) {
+        e.preventDefault();
+        var focusable = form.find('input, select, textarea').filter(':visible');
+        var next = focusable.eq(focusable.index(this) + 1);
+        if (next.length) {
+          next.focus();
+        } else {
+          form.submit();
+        }
+      }
+    });
+  });
+
+  $(document).ready(function () {
+    // Open modal on remove-item click
+    $('.remove-item').on('click', function (e) {
+      e.preventDefault();
+      var modalTarget = $(this).data('modal-target');
+      $(modalTarget).fadeIn();
+    });
+
+    // Close modal on close button click or outside click
+    $('.modal-delete .close').on('click', function () {
+      var modal = $(this).closest('.modal-delete');
+      modal.fadeOut();
+    });
+
+    $('.modal-content').on('click', function (e) {
+      e.stopPropagation();
+    });
+  });;
+
+
+
+
+  function handleSaveContactNotes(event) {
+  const saveIcon = event.target;
+  const row = saveIcon.closest('tr');
+  const contactId = row.querySelector('td:first-child').innerText;
+  const notesTextArea = row.querySelector(`#notes-${contactId}`);
+
+  // Make an AJAX request to update the contact notes
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '{% url "update_contact_notes" %}', true);
+  xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+  xhr.setRequestHeader('Content-Type', 'application/json');
+
+  const data = {
+    id: contactId,
+    notes: notesTextArea.value,
+  };
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      // On successful update, retain the green save icon
+      saveIcon.classList.remove('updated');
+
+      // Remove the "changed" class from the input element
+      notesTextArea.classList.remove('changed');
+    } else {
+      // On error, enable the save icon again
+      saveIcon.style.pointerEvents = 'auto';
+      alert('Error occurred while updating the contact notes.');
+    }
+  };
+
+  xhr.onerror = function () {
+    // On error, enable the save icon again
+    saveIcon.style.pointerEvents = 'auto';
+    alert('Error occurred while updating the contact notes.');
+  };
+
+  xhr.send(JSON.stringify([data]));
+}
+
+// Attach event listeners to the save icons for contact notes
+const saveContactNotesIcons = document.querySelectorAll('.save-icon');
+saveContactNotesIcons.forEach((saveIcon) => {
+  saveIcon.addEventListener('click', handleSaveContactNotes);
+});
+
+// Function to get the CSRF token from the cookie
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+// Add event listener to track changes in contact notes textarea
+const notesTextAreasContact = document.querySelectorAll('textarea[name="notes"]');
+notesTextAreasContact.forEach((notesTextArea) => {
+  notesTextArea.addEventListener('input', () => {
+    notesTextArea.classList.add('changed');
+    const row = notesTextArea.closest('tr');
+    const saveIcon = row.querySelector('.save-icon');
+    saveIcon.classList.add('updated');
+  });
+});
+
+
+</script>
+
+
+
+
+
+
+
+{% endblock %}

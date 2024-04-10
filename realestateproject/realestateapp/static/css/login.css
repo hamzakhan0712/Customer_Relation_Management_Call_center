@@ -1,0 +1,127 @@
+/* General styles */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* Container styles */
+.scontainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Message block styles */
+.message-block {
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.messages {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.messages li {
+  padding: 5px;
+}
+
+.message-success {
+  color: #28a745;
+}
+
+.message-error {
+  color: #dc3545;
+}
+
+/* Form styles */
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 0.5s ease-in-out;
+}
+
+.signin-logo {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+#signin {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.input-signin {
+  width: 300px;
+  padding: 12px;
+  border: 2px solid var(--button-color);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  color: #333;
+  background-color: #f0f0f0;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.input-signin::placeholder {
+  color: #666;
+}
+
+.input-signin:focus {
+  border-color: var(--button-color);
+  transform: scale(1.05);
+}
+
+.input-sign-submit {
+  width: 200px;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--button-color);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.input-sign-submit:hover {
+  background-color: var(--shade-);
+  transform: translateY(-2px);
+}
+
+.input-sign-submit:active {
+  background-color: var(--sent-color);
+  transform: translateY(2px);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

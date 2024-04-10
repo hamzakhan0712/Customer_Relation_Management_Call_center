@@ -1,0 +1,654 @@
+{% load static %}
+<div class="navbar">
+  <div class="nav-left">
+    <span id="menu-toggle" aria-label="Toggle Sidebar"><i class="fas fa-bars"></i> </span>
+    <div id="menu-notification-badge" class="notification-badge menu"></div>
+
+    {% if user.role == 1 %}
+    <a href="{% url 'dashboard' %}">
+      <img class="navbar-brand" src="{% static 'img/f-logo.png' %}" alt="">
+    </a>
+    {% elif user.role == 2 %}
+    <a href="{% url 'dashboard' %}">
+      <img class="navbar-brand" src="{% static 'img/f-logo.png' %}" alt="">
+    </a>
+    {% elif user.role == 3 %}
+    <a href="{% url 'dashboard' %}">
+      <img class="navbar-brand" src="{% static 'img/f-logo.png' %}" alt="">
+    </a>
+    {% endif %}
+  </div>
+  <div class="nav-mid"></div>
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+    <div id="tea-break">
+      <div class="blink">
+        <div class="tea-break-icon" onclick="toggleTeaBreak()">
+          <i class="fas fa-mug-hot"></i> Break
+        </div>
+        <div class="tea-break-content">
+          <div class="break-con">
+            <div>
+              <div class="timer">00:00:00</div>
+              <div class="buttons">
+                <button onclick="startTimer()"><i class="fas fa-duotone fa-play"></i></button>
+                <button onclick="stopTimer()"><i class="fa-solid fa-stop"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <form action="{% url 'save_break' %}" id="break-form" style="display: none;">
+          {% csrf_token %}
+          <input type="hidden" id="start_time" name="start_time" value="">
+          <input type="hidden" id="stop_time" name="stop_time" value="">
+          <input type="hidden" id="duration" name="duration" value="">
+        </form>
+      </div>
+    </div>
+    {% if user.role == 2 or user.role == 3 %}
+    <a href="{% url 'inbox' %}" class="inbox">
+      <i class="fas fa-solid fa-envelope">
+        {% if unseen_team_leader_count %}
+        <span class="notification-count">{{ unseen_team_leader_count }}</span>
+        {% endif %}
+      </i>
+    </a>
+    {% endif %}
+
+    {% if user.role == 1 %}
+    <p>{{ user.username }}</p>
+    {% endif %}
+    <p>{{ user.teamleader.first_name }}</p>
+    <p>{{ user.agent.first_name }}</p>
+    <p>{{ user.support_staff.first_name }}</p>
+    <a class="sign-out" href="{% url 'user_logout' %}"><i class="fas fa-thin fa-sign-out-alt"></i></a>
+    {% endif %}
+  </div>
+</div>
+
+{% if messages %}
+<div class="message-block" id="messageBlock">
+  <ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+      {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+
+<div class="sidebar">
+  <ul class="sidebar-ul">
+    {% if user.role == 1 %}
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'dashboard' %}"><i
+          class="fas fa-chart-line"></i>Dashboard</a></li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'contact_list' %}">
+        {% if unseen_contacts_count %}
+        <span class="notification-badge">{{ unseen_contacts_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-address-book"></i> Contacts
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'lead_list' %}">
+        {% if unseen_leads_count %}
+        <span class="notification-badge">{{ unseen_leads_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-users"></i> Leads
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'lead_transfer_list' %}">
+        {% if unseen_lead_transfer_count %}
+        <span class="notification-badge">{{ unseen_lead_transfer_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-exchange-alt"></i> Lead Transfers
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'paidcustomer_list' %}">
+        {% if unseen_paidcustomer_count %}
+        <span class="notification-badge">{{ unseen_paidcustomer_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-dollar-sign"></i> Paid Customers
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'agent_sales' %}">
+        <i class="fas fa-user"></i> Agent-wise Sales
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'task_list' %}">
+        {% if unseen_tasks_count %}
+        <span class="notification-badge">{{ unseen_tasks_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-tasks"></i> Tasks/Activities
+      </a>
+    </li>
+
+
+    <li class="sidebar-li"><a class="sidebar-link sub-a" href="#"><i class="fas fa-thin fa-users-cog"></i>Team/Staff<i
+          class="fas fa-chevron-down arrow-icon"></i></a>
+      <ul class="sub-menu">
+        <li><a href="{% url 'team_leader_list' %}">Team Leaders</a></li>
+        <li><a href="{% url 'agent_list' %}">Agents</a></li>
+      </ul>
+    </li>
+
+
+    <li class="sidebar-li"><a class="sidebar-link" href="#"><i class="fas fa-thin fa-calendar-check"></i> Attendance<i
+          class="fas fa-chevron-down arrow-icon"></i></a>
+      <ul class="sub-menu">
+        <li><a href="{% url 'team_leader_attendance' %}">TL Attendance</a></li>
+        <li><a href="{% url 'agent_attendance' %}">Agents Attendance</a></li>
+      </ul>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'calendar_list' %}">
+        {% if unseen_calendar_count %}
+        <span class="notification-badge">{{ unseen_calendar_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-calendar-alt"></i> Calendar Events
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'marketing_list' %}">
+        {% if unseen_marketing_count %}
+        <span class="notification-badge">{{ unseen_marketing_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-bullhorn"></i> Marketing Campaigns
+      </a>
+    </li>
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'analysis' %}"><i class="fas fa-thin fa-chart-pie"></i>
+        Analytics</a></li>
+
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'complaint_list' %}">
+        {% if unseen_complaints_count %}
+        <span class="notification-badge">{{ unseen_complaints_count }}</span>
+        {% endif %}
+        <i class="fas fa-exclamation-circle"></i>Complaints
+      </a>
+    </li>
+
+    <li class="sidebar-li"><a class="sidebar-link" href="#"><i class="far fa-file-alt"></i> Reports <i
+          class="fas fa-chevron-down arrow-icon"></i></a>
+      <ul class="sub-menu">
+        <li><a href="{% url 'teamleader_reports' %}">TL Reports</a></li>
+        <li><a href="{% url 'agent_reports' %}">Agent Reports</a></li>
+      </ul>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'backup_database' %}">
+          <button>
+          <i class="fas fa-database"></i> Backup Database
+        </button>
+        </a>
+      </li>
+    
+    
+
+    {% endif %}
+
+
+    {% if user.role == 2 %}
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'dashboard' %}"><i class="fas fa-chart-line"></i>
+        Dashboard</a></li>
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'agent_list' %}"><i
+          class="fas fa-thin fa-users"></i>Team</a></li>
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'agent_attendance' %}"><i
+          class="fas fa-thin fa-calendar-check"></i>Team Attendance</a></li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'contact_list' %}">
+        {% if unseen_contacts_count %}
+        <span class="notification-badge">{{ unseen_contacts_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-address-book"></i> Contacts
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'lead_list' %}">
+        <i class="fas fa-thin fa-users"></i> Leads
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'lead_transfer_list' %}">
+        {% if unseen_lead_transfer_count %}
+        <span class="notification-badge">{{ unseen_lead_transfer_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-exchange-alt"></i> Lead Transfers
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'agent_sales' %}">
+        <i class="fas fa-user"></i> Agent-wise Sales
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'paidcustomer_list' %}">
+
+        <i class="fas fa-thin fa-dollar-sign"></i> Paid Customers
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'task_list' %}">
+        <i class="fas fa-thin fa-tasks"></i> Tasks/Activities
+      </a>
+    </li>
+
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'complaint_list' %}">
+        <i class="fas fa-exclamation-circle"></i> Complaints
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'calendar_list' %}">
+        <i class="fas fa-thin fa-calendar-alt"></i> Calendar
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'marketing_list' %}">
+        {% if unseen_marketing_count %}
+        <span class="notification-badge">{{ unseen_marketing_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-bullhorn"></i> Marketing
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'agent_reports' %}">
+        <i class="far fa-file-alt"></i> Reports
+      </a>
+    </li>
+
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'my_attendance' %}"><i
+          class="fas fa-thin fa-calendar-check"></i> My Attendance</a></li>
+
+    <li class="sidebar-li"><a class="sidebar-link"
+        href="{% url 'team_leader_update' pk=request.user.teamleader.id %}"><i class="fas fa-thin fa-user-cog"></i>
+        Profile Settings</a></li>
+
+    {% endif %}
+
+    {% if user.role == 3 %}
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'dashboard' %}"><i class="fas fa-chart-line"></i>
+        Dashboard</a></li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'contact_list' %}">
+        {% if unseen_contacts_count %}
+        <span class="notification-badge">{{ unseen_contacts_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-address-book"></i> Contacts
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'lead_list' %}">
+        <i class="fas fa-thin fa-users"></i> Leads
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'lead_transfer_list' %}">
+        <i class="fas fa-thin fa-exchange-alt"></i> Lead Transfers
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'paidcustomer_list' %}">
+
+        <i class="fas fa-thin fa-dollar-sign"></i> Paid Customers
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'task_list' %}">
+        <i class="fas fa-thin fa-tasks"></i> Tasks/Activities
+
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'complaint_list' %}">
+        <i class="fas fa-exclamation-circle"></i>Complaints
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'calendar_list' %}">
+        <i class="fas fa-thin fa-calendar-alt"></i> Calendar
+
+      </a>
+    </li>
+
+    <li class="sidebar-li">
+      <a class="sidebar-link" href="{% url 'marketing_list' %}">
+        {% if unseen_marketing_count %}
+        <span class="notification-badge">{{ unseen_marketing_count }}</span>
+        {% endif %}
+        <i class="fas fa-thin fa-bullhorn"></i> Marketing
+      </a>
+    </li>
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'my_attendance' %}"><i
+          class="fas fa-thin fa-calendar-check"></i> My Attendance</a></li>
+
+    <li class="sidebar-li"><a class="sidebar-link" href="{% url 'agent_update' pk=request.user.agent.id %}"><i
+          class="fas fa-thin fa-user-cog"></i> Profile Settings</a></li>
+
+    {% endif %}
+
+  </ul>
+</div>
+
+
+<script src="https://kit.fontawesome.com/c5af9607d4.js" crossorigin="anonymous"></script>
+<script>
+
+
+  function toggleTeaBreak() {
+    const teaBreakContent = $('.tea-break-content');
+    if (teaBreakContent.is(':visible')) {
+      teaBreakContent.slideUp(500, function () {
+        $('#tea-break').animate({ right: '-40px' }, 500);
+      });
+    } else {
+      $('#tea-break').animate({ right: '0' }, 500);
+      teaBreakContent.slideDown(500);
+    }
+  }
+
+  // Close tea break content when clicking outside
+  $(document).on('click', function (event) {
+    const teaBreak = $('#tea-break');
+    if (!teaBreak.is(event.target) && teaBreak.has(event.target).length === 0) {
+      const teaBreakContent = $('.tea-break-content');
+      if (teaBreakContent.is(':visible')) {
+        teaBreakContent.slideUp(500, function () {
+          $('#tea-break').animate({ right: '-40px' }, 500);
+        });
+      }
+    }
+  });
+
+
+  let startTime;
+  let stopTime;
+  let timerInterval;
+  let isTimerRunning = false;
+
+  // Check if there's a stored start time in localStorage
+  const storedStartTime = localStorage.getItem('start_time');
+  if (storedStartTime) {
+    // If a start time is found in localStorage, resume the timer
+    startTime = new Date(storedStartTime);
+    startInterval();
+    isTimerRunning = true;
+  }
+
+
+  function startTimer() {
+    const currentDateTime = new Date();
+    startTime = formatDateTime(currentDateTime);
+
+
+    // Store the start time in localStorage
+    localStorage.setItem('start_time', startTime);
+    // Start the timer interval
+    startInterval();
+
+    // Add blinking effect to the timer
+    const break_blink = document.querySelector('.blink');
+    break_blink.classList.add('blinking');
+
+    // Assuming you have a variable isOnBreak that holds the true/false value
+    const isOnBreak = true; // Set this value based on your logic
+
+    fetch('/update_break_status/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json', // Specify JSON content type
+      },
+      body: JSON.stringify({ is_on_break: isOnBreak }), // Send the is_on_break value
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Break status updated successfully.');
+        } else {
+          console.error(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('An error occurred:', error);
+      });
+
+    isTimerRunning = true;
+  }
+
+
+  function stopTimer() {
+    clearInterval(timerInterval); // Stop the timer interval
+
+    const currentDateTime = new Date();
+
+    // Remove the start time from localStorage
+    localStorage.removeItem('start_time');
+
+
+    stopTime = formatDateTime(currentDateTime);
+
+    // Calculate the duration
+    const duration = calculateDuration(startTime, stopTime) / 1000;
+
+    saveBreak(startTime, stopTime, duration);
+
+
+    // Remove blinking effect from the timer
+    const break_blink = document.querySelector('.blink');
+    break_blink.classList.remove('blinking');
+
+    // Assuming you have a variable isOnBreak that holds the true/false value
+    const isOnBreak = false; // Set this value based on your logic
+
+    fetch('/update_break_status/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json', // Specify JSON content type
+      },
+      body: JSON.stringify({ is_on_break: isOnBreak }), // Send the is_on_break value
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Break status updated successfully.');
+        } else {
+          console.error(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('An error occurred:', error);
+      });
+
+    isTimerRunning = false;
+
+  }
+
+
+  function startInterval() {
+    timerInterval = setInterval(updateTimer, 1000); // Update timer every second
+  }
+
+  function updateTimer() {
+    const currentDateTime = new Date();
+    const currentTime = formatDateTime(currentDateTime).slice(11, 19); // Extract time portion from the currentDateTime
+
+    // Update the timer display
+    const timerElement = document.querySelector('.timer');
+    timerElement.textContent = currentTime;
+
+    const break_blink = document.querySelector('.blink');
+    if (isTimerRunning) {
+      break_blink.classList.toggle('blinking');
+    }
+  }
+
+
+  function formatDateTime(dateTime) {
+    const year = dateTime.getFullYear();
+    const month = (dateTime.getMonth() + 1).toString().padStart(2, '0');
+    const day = dateTime.getDate().toString().padStart(2, '0');
+    const hours = dateTime.getHours().toString().padStart(2, '0');
+    const minutes = dateTime.getMinutes().toString().padStart(2, '0');
+    const seconds = dateTime.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
+  function calculateDuration(startTime, stopTime) {
+    const start = new Date(startTime);
+    const stop = new Date(stopTime);
+    const duration = stop - start;
+    return duration;
+  }
+
+  function saveBreak(startTime, stopTime, duration) {
+    const formData = new FormData();
+    formData.append('start_time', startTime);
+    formData.append('stop_time', stopTime);
+    formData.append('duration', duration);
+
+    fetch('{% url "save_break" %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log(data.message); // Success message from the server
+        } else {
+          console.error(data.message); // Error message from the server
+        }
+      })
+      .catch(error => {
+        console.error('An error occurred:', error);
+      });
+  }
+
+
+
+
+
+
+
+
+  // JS to toggle the visibility of the sidebar on click of the menu toggle button
+  const sidebar = document.querySelector('.sidebar');
+  const menuToggle = document.querySelector('#menu-toggle');
+
+  // Show/hide sidebar when "bars" icon is clicked
+  menuToggle.addEventListener('click', function () {
+    sidebar.classList.toggle('show');
+  });
+
+  // Hide sidebar when user clicks outside of it
+  document.addEventListener('click', function (event) {
+    if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+      sidebar.classList.remove('show');
+    }
+  });
+
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebarItems = document.querySelectorAll('.sidebar-li');
+
+    sidebarItems.forEach(function (item) {
+      const submenu = item.querySelector('.sub-menu');
+      const arrowIcon = item.querySelector('.arrow-icon');
+
+      item.addEventListener('click', function () {
+        item.classList.toggle('open');
+        submenu.style.display = item.classList.contains('open') ? 'block' : 'none';
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      const sidebar = document.querySelector('.sidebar');
+
+      if (!event.target.closest('.sidebar-li')) {
+        sidebarItems.forEach(function (item) {
+          item.classList.remove('open');
+          item.querySelector('.sub-menu').style.display = 'none';
+        });
+      }
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var messageBlock = document.getElementById('messageBlock');
+
+    if (messageBlock) {
+      setTimeout(function () {
+        messageBlock.classList.add('slide-out');
+        setTimeout(function () {
+          messageBlock.remove();
+        }, 500);
+      }, 2000);
+    }
+  });
+
+
+  function updateMenuBarNotificationBadgeCount() {
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    let totalCount = 0;
+
+    sidebarLinks.forEach(link => {
+      const badge = link.querySelector('.notification-badge');
+      if (badge && badge.textContent.trim() !== '') {
+        totalCount += 1;
+      }
+    });
+
+    const menuBarBadge = document.getElementById('menu-notification-badge');
+    menuBarBadge.textContent = totalCount > 0 ? totalCount.toString() : '';
+    menuBarBadge.style.display = totalCount > 0 ? 'inline' : 'none';
+  }
+
+  // Example usage
+  updateMenuBarNotificationBadgeCount();
+
+</script>

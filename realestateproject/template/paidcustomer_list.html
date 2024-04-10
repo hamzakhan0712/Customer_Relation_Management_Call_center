@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Horizon- Paid Customers
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+  .modal-check{
+    height: auto !important;
+  }
+</style>
+
+<br>
+<br>
+<br>
+<div class="form-container">
+  <form method="get" action="{% url 'paidcustomer_list' %}">
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="filter" class="form-control" placeholder="Search " value="{{ filter }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+      </div>
+      <div class="">
+        <select name="payment_status" class="form-control">
+          <option value="" selected disabled>Select Status</option>
+          <option value="pending" {% if payment_status == "pending" %}selected{% endif %}>Pending</option>
+          <option value="completed" {% if payment_status == "completed" %}selected{% endif %}>Completed</option>
+          <option value="refunded" {% if payment_status == "refunded" %}selected{% endif %}>Refunded</option>
+          <option value="cancelled" {% if payment_status == "cancelled" %}selected{% endif %}>Cancelled</option>
+        </select>
+      </div>
+      <div class="">
+        <select name="orderby" class="form-control">
+          <option value="" selected disabled>Select Sorting</option>
+          <option value="id" {% if orderby == 'id' %}selected{% endif %}>Sort by ID</option>
+          <option value="payment_date" {% if orderby == 'payment_date' %}selected{% endif %}>Sort by Payment Date</option>
+        </select>
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+    <a href="?filter_by=today" class="btn">Today</a>
+    <a href="?filter_by=this_week" class="btn">This Week</a>
+    <a href="?filter_by=this_month" class="btn">This Month</a>
+    <a href="?filter_by=6_months" class="btn">Last 6 Months</a>
+    <a href="?filter_by=this_year" class="btn">This Year</a>
+  </form>
+  <br>
+
+  <a class="add" href="#" id="leadLink"><i class="fas fa-regular fa-plus"></i> Paid Customer</a>
+</div>
+ 
+
+
+<div class="modal" id="leadModal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <div class="modal-body">
+      {% include 'paidcustomer_create.html' %}
+    </div>
+  </div>
+</div>
+
+<table class="paidcustomer-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Payment Date</th>
+      <th>Contact Number</th>
+      <th>Transaction ID</th>
+      <th>Amount Paid</th>
+      <th>Payment Status</th>
+      <th>Payment Method</th>
+      <th>Lead</th>
+      <th>TL / Agent</th>
+      <th>Remarks</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="searchResultsBody">
+    {% for paidcustomer in object_list %}
+    <tr>
+      <td>{{ paidcustomer.id }}</td>
+      <td>{{ paidcustomer.payment_date }}</td>
+      <td>{{ paidcustomer.related_contact }}</td>
+      <td>{{ paidcustomer.transaction_id }}</td>
+      <td style="color: green;">₹ {{ paidcustomer.amount_paid }}/-</td>
+      <td{% if paidcustomer.get_payment_status_display == 'Pending' %} style="color: red;"{% endif %}>{{ paidcustomer.get_payment_status_display }}</td>
+
+      <td>{{ paidcustomer.get_payment_method_display }}</td>
+      <td>{{ paidcustomer.lead }}</td>
+
+      {% if paidcustomer.lead.assigned_to_agents %}
+      <td>{{ paidcustomer.lead.assigned_to_agents.first_name }} {{ paidcustomer.lead.assigned_to_agents.last_name }}
+      </td>
+      {% else %}
+      <td>{{ paidcustomer.lead.assigned_to.first_name }} {{ paidcustomer.lead.assigned_to.last_name }}</td>
+      {% endif %}
+
+      <td>{{ paidcustomer.remarks }}</td>
+      <td>
+        
+        <a class="edit-item" href="{% url 'paidcustomer_update' paidcustomer.pk %}"><i class="fas fa-edit"></i></a>
+
+        {% if not user.role == 3 %}
+        <a class="remove-item" href="#" data-modal-target="#deletePaidCustomerModal{{ paidcustomer.pk }}"><i
+            class="fas fa-trash"></i></a>
+        <div id="deletePaidCustomerModal{{ paidcustomer.pk }}" class="modal-delete">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h1>Delete Paid Customer</h1>
+            <p>Are you sure you want to delete the paid customer "{{ paidcustomer.related_contact }}"?</p>
+            <form method="post" action="{% url 'paidcustomer_delete' paidcustomer.pk %}">
+              {% csrf_token %}
+              <a href="{% url 'paidcustomer_list' %}" class="btn btn-secondary">Cancel</a>
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+        {% if user.role == 2 or user.role == 3 %}
+            
+          {% if paidcustomer.verify_request %}
+          <i style="color: green;" class="uil uil-envelope-check"></i>
+          {% else %}
+              <a href="{% url 'update_verify_request' paidcustomer.pk %}">
+                  <i style="color: red;" class="uil uil-envelope-upload"></i>
+              </a>
+          {% endif %}
+
+          {% else %}
+
+                   
+          {% if paidcustomer.verify_request %}
+          {% if not paidcustomer.verified %}
+              <a href="{% url 'update_verifed' paidcustomer.pk %}">
+                  <i style="color: red;" class="uil uil-comment-verify"></i>
+              </a>
+          {% else %}
+              <i style="color: green;" class="uil uil-comment-verify"></i>
+          {% endif %}
+      {% endif %}
+      
+
+        {% endif %}
+
+   
+          
+ 
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="12">No paid customers found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="pagination">
+  {% if is_paginated %}
+  {% if page_obj.hasprevious %}
+  <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="current-page">{{ page_obj.number }}</span>
+  <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+  {% endif %}
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#leadLink').click(function (e) {
+      e.preventDefault();
+      $('#leadModal').fadeIn();
+    });
+
+    $('.close').click(function () {
+      $('#leadModal').fadeOut();
+    });
+  });
+
+  $(document).ready(function () {
+    $('#paidCustomerCreateForm').on('keydown', 'input, select, textarea', function (e) {
+      var self = $(this);
+      var form = self.parents('form:eq(0)');
+      if (e.which === 13) {
+        e.preventDefault();
+        var focusable = form.find('input, select, textarea').filter(':visible');
+        var next = focusable.eq(focusable.index(this) + 1);
+        if (next.length) {
+          next.focus();
+        } else {
+          form.submit();
+        }
+      }
+    });
+  });
+
+  $(document).ready(function () {
+    // Open modal on remove-item click
+    $('.remove-item').on('click', function (e) {
+      e.preventDefault();
+      var modalTarget = $(this).data('modal-target');
+      $(modalTarget).fadeIn();
+    });
+
+    // Close modal on close button click or outside click
+    $('.modal-delete .close').on('click', function () {
+      var modal = $(this).closest('.modal-delete');
+      modal.fadeOut();
+    });
+
+    $('.modal-content').on('click', function (e) {
+      e.stopPropagation();
+    });
+  });;
+
+
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Horizon- TL Performance Reports
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 10px;
+    }
+
+    .tabs {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+
+    .tab.active {
+        background-color: #f2f2f2;
+        border-bottom: 2px solid blue;
+        color: blue;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .top-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 5rem;
+    }
+
+    .teamleader-details {
+        flex: 1;
+
+    }
+
+    .performance-chart-container {
+        flex: 2;
+        margin-top: 2rem;
+    }
+
+    .teamleader-details .row {
+        display: flex;
+        margin-bottom: 10px;
+    }
+
+    .teamleader-details .label {
+        flex: 0 0 40%;
+        font-weight: bold;
+    }
+
+    .teamleader-details .value {
+        flex: 0 0 60%;
+    }
+
+    .data-count-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+    }
+
+    .data-count-table th,
+    .data-count-table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .data-count-table th {
+        background-color: #f2f2f2;
+    }
+
+    .data-count-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+</style>
+<br>
+<div class="container">
+
+    <div class="top-row">
+        <div class="teamleader-details">
+            <h1 style="margin-top: 20px;">TeamLeader Performance Report</h1>
+            <div class="row">
+                <div class="label">TeamLeader ID:</div>
+                <div class="value">{{ teamleader.id }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Joining Date:</div>
+                <div class="value">{{ teamleader.joining_date }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Full Name:</div>
+                <div class="value">{{ teamleader.first_name }} {{ teamleader.last_name }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Phone Number:</div>
+                <div class="value">{{ teamleader.phone_number }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Email:</div>
+                <div class="value">{{ teamleader.email }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Address:</div>
+                <div class="value">{{ teamleader.address }}</div>
+            </div>
+
+            <table class="data-count-table">
+                <tr>
+                    <th>Sections</th>
+                    <th>Count</th>
+                </tr>
+                <tr>
+                    <td>Team Agents</td>
+                    <td>{{ team_agents|length }}</td>
+                </tr>
+                <tr>
+                    <td>Total Leads</td>
+                    <td>{{ leads|length }}</td>
+                </tr>
+                <tr>
+                    <td>Total Paid Customers</td>
+                    <td>{{ paid_customers|length }}</td>
+                </tr>
+                <tr>
+                    <td>Total Tasks</td>
+                    <td>{{ tasks|length }}</td>
+                </tr>
+                <tr>
+                    <td>Total Complaints</td>
+                    <td>{{ complaints|length }}</td>
+                </tr>
+                <tr>
+                    <td>Leaves Taken</td>
+                    <td>{{ leaves_taken|length }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="performance-chart-container">
+            <h4 style="margin: 0;">Report Chart: </h4>
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+
+
+    <br>
+    <div class="tabs">
+        <div class="tab active" onclick="showTabContent('tab-team-agents')">Team Agents</div>
+        <div class="tab" onclick="showTabContent('tab-leads')">Leads</div>
+        <div class="tab" onclick="showTabContent('tab-paid-customers')">Paid Customers</div>
+        <div class="tab" onclick="showTabContent('tab-tasks')">Tasks</div>
+        <div class="tab" onclick="showTabContent('tab-complaints')">Complaints</div>
+    </div>
+
+
+
+
+    <!-- Tab Contents -->
+    <div class="tab-content active" id="tab-team-agents">
+        <h2>Team Agents</h2>
+        <table>
+            <tr style="text-align:left;">
+                <th>Agent ID</th>
+                <th>Joining Date</th>
+                <th>Full Name</th>
+                <th>Phone Number</th>
+                <th>E-mail</th>
+                <th>Address</th>
+                <!-- Add more lead details as needed -->
+            </tr>
+            {% for team_agent in team_agents %}
+            <tr>
+                <td>{{ team_agent.id }}</td>
+                <td>{{ team_agent.joining_date }}</td>
+                <td>{{ team_agent.first_name }} {{ team_agent.last_name }}</td>
+                <td>{{ team_agent.phone_number }}</td>
+                <td>{{ team_agent.email }}</td>
+                <td>{{ team_agent.address }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="tab-leads">
+        <h2>Leads</h2>
+        <table>
+            <tr style="text-align:left;">
+                <th>Lead ID</th>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Details</th>
+                <th>Follow Up</th>
+                <!-- Add more lead details as needed -->
+            </tr>
+            {% for lead in leads %}
+            <tr>
+                <td>{{ lead.id }}</td>
+                <td>{{ lead.date }}</td>
+                <td>{{ lead.name }}</td>
+                <td>{{ lead.source }}</td>
+                <td>{{ lead.status }}</td>
+                <td>{{ lead.details }}</td>
+                <td>{{ lead.follow_up_actions }}</td>
+
+                <!-- Add more lead details as needed -->
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="tab-content" id="tab-paid-customers">
+        <h2>Paid Customers</h2>
+        <table>
+            <tr style="text-align:left;">
+                <th>Customer ID</th>
+                <th>Payment Date</th>
+                <th>Customer Name</th>
+                <th>Lead Name</th>
+                <th>Payment Method</th>
+                <th>Amount Paid</th>
+                <th>Transaction ID</th>
+                <th>Payment Status</th>
+                <th>Remark</th>
+                <!-- Add more paid customer details as needed -->
+            </tr>
+            {% for customer in paid_customers %}
+            <tr>
+                <td>{{ customer.id }}</td>
+                <td>{{ customer.payment_date }}</td>
+                <td>{{ customer.related_contact.name }}</td>
+                <td>{{ customer.lead.name }}</td>
+                <td>{{ customer.payment_method }}</td>
+                <td>{{ customer.amount_paid }}</td>
+                <td>{{ customer.transaction_id }}</td>
+                <td>{{ customer.payment_status }}</td>
+                <td>{{ customer.remarks }}</td>
+                <!-- Add more paid customer details as needed -->
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+
+    <div class="tab-content" id="tab-tasks">
+        <h2>Tasks</h2>
+        <table>
+            <tr style="text-align:left;">
+                <th>Task ID</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Task Type</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Description</th>
+                <!-- Add more task details as needed -->
+            </tr>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.name }}</td>
+                <td>{{ task.date|date }}</td>
+                <td>{{ task.task_type }}</td>
+                <td>{{ task.priority }}</td>
+                <td>{{ task.status }}</td>
+                <td>{{ task.description }}</td>
+                <!-- Add more task details as needed -->
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="tab-content" id="tab-complaints">
+        <h2>Complaints</h2>
+        <table>
+            <tr style="text-align:left;">
+                <th>Complaint ID</th>
+                <th>Date</th>
+                <th>Customer Name</th>
+                <th>Complaint Text</th>
+                <th>Resolved</th>
+                <!-- Add more complaint details as needed -->
+            </tr>
+            {% for complaint in complaints %}
+            <tr>
+                <td>{{ complaint.id }}</td>
+                <td>{{ complaint.created_at|date }}</td>
+                <td>{{ complaint.related_contact.name }}</td>
+                <td>{{ complaint.complaint_text }}</td>
+                <td>{{ complaint.resolved }}</td>
+                <!-- Add more complaint details as needed -->
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function showTabContent(tabId) {
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => tab.classList.remove('active'));
+        tabContents.forEach(tabContent => tabContent.classList.remove('active'));
+
+        const selectedTab = document.getElementById(tabId);
+        const selectedTabLink = document.querySelector(`[onclick="showTabContent('${tabId}')"]`);
+
+        if (selectedTab && selectedTabLink) {
+            selectedTab.classList.add('active');
+            selectedTabLink.classList.add('active');
+        }
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // JavaScript code to get data count for the bar chart (replace with your actual data)
+    const leadsCount = {{ leads| length }};
+    const paidCustomersCount = {{ paid_customers| length }};
+    const teamagentsCount = {{ team_agents| length }};
+    const tasksCount = {{ tasks| length }};
+    const complaintsCount = {{ complaints| length }};
+
+    // Bar chart data
+    const data = {
+        labels: ['Team Agents', 'Leads', 'Paid Customers', 'Tasks', 'Complaints'],
+        datasets: [{
+            label: 'Data Count',
+            data: [teamagentsCount, leadsCount, paidCustomersCount, tasksCount, complaintsCount],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(255, 159, 64, 1)',
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    // Bar chart options
+    const options = {
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    integer: true // Set the step size to 1
+                }
+            }
+        }
+    };
+
+    // Create the bar chart
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: options
+    });
+</script>
+
+
+
+
+
+
+{% endblock %}

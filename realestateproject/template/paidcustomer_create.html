@@ -1,0 +1,187 @@
+<style>
+  .related-contact-list,
+  .lead-list {
+    position: relative;
+  }
+
+  .related-contact-list ul.list-group,
+  .lead-list ul.list-group {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 5px 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .related-contact-list ul.list-group li,
+  .lead-list ul.list-group li {
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  .related-contact-list ul.list-group li:hover,
+  .lead-list ul.list-group li:hover {
+    background-color: #f5f5f5;
+    color: black;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .related-contact-list ul.list-group li,
+  .lead-list ul.list-group li {
+    opacity: 1;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  #relatedContactList,
+  #leadList {
+    display: none;
+  }
+
+
+  .highlight {
+    color: #0022ff;
+    font-weight: bold;
+  }
+</style>
+
+
+
+<h2>Create Paid Customer</h2>
+<form id="paidCustomerCreateForm" method="post" action="{% url 'paidcustomer_create' %}">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="id_payment_date">Payment Date</label>
+    <input type="date" name="payment_date" id="id_payment_date" class="form-control" required>
+  </div>
+
+  <div class="form-group">
+    <label for="id_related_contact">Related Contact</label>
+    <input type="text" name="related_contact" class="form-control"
+      placeholder="Enter contact Number...">
+  </div>
+
+  <div class="form-group">
+    <label for="id_transaction_id">Transaction ID</label>
+    <input type="text" name="transaction_id" id="id_transaction_id" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label for="id_amount_paid">Amount Paid</label>
+    <input type="number" name="amount_paid" id="id_amount_paid" class="form-control" step="0.01" required>
+  </div>
+
+  <div class="form-group">
+    <label for="id_payment_status">Payment Status</label>
+    <select name="payment_status" id="id_payment_status" class="form-control" required>
+      <option value="" selected disabled>Select Status</option>
+      {% if user.role == 1 %}
+      <option value="pending">pending</option>
+      <option value="completed">completed</option>
+      <option value="refunded">refunded</option>
+      <option value="cancelled">cancelled</option>
+      {% else %}
+      <option value="pending">pending</option>
+      {% endif %}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="id_payment_method">Payment Method</label>
+    <select name="payment_method" id="id_payment_method" class="form-control" required>
+      <option value="" selected disabled>Select Payment Method</option>
+      <option value="credit_card">Credit Card</option>
+      <option value="bank_transfer">Bank Transfer</option>
+      <option value="G-pay">G-pay</option>
+      <option value="Phonepe">Phonepe</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
+
+
+
+  <div class="form-group">
+    <label for="id_lead">Lead</label>
+    <input type="text" name="lead" id="id_lead" class="form-control" placeholder="Enter lead name...">
+    <!-- Hidden input field for storing the selected contact ID -->
+    <input type="hidden" name="lead" id="id_lead_id">
+    <div id="leadList" class="lead-list">
+      <ul class="list-group" id="leadListItems"></ul>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="id_remarks">Remarks</label>
+    <textarea name="remarks" id="id_remarks" class="form-control"></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+
+<script>
+  $(document).ready(function () {
+    
+    // Function to handle the lead search and display the results
+    function filterLeads() {
+      var filterVal = $("#id_lead").val().toLowerCase().trim();
+      var leadList = $("#leadListItems");
+
+      if (filterVal === '') {
+        // If the filter is empty, hide the list
+        $('#leadList').hide();
+      } else {
+        // Clear previous list items
+        leadList.empty();
+
+        // Iterate over the filtered leads and add them to the list
+        {% for lead in leads %}
+        var leadName = "{{ lead.name }}";
+        var leadId = "{{ lead.id }}";
+        var matchIndex = leadName.toLowerCase().indexOf(filterVal);
+        if (matchIndex !== -1) {
+          var highlightedName = leadName.substring(0, matchIndex) +
+            '<span class="highlight">' + leadName.substring(matchIndex, matchIndex + filterVal.length) + '</span>' +
+            leadName.substring(matchIndex + filterVal.length);
+          var listItem = $("<li></li>").html(highlightedName).addClass("list-group-item").attr('data-lead-id', leadId);
+          leadList.append(listItem);
+        }
+        {% endfor %}
+      }
+
+      // Show or hide the list based on whether there are matches
+      $('#leadList').toggle(leadList.children().length > 0);
+    }
+
+    // Handle input event on the "Related lead" input field
+    $("#id_lead").on("input", function () {
+      filterLeads();
+    });
+
+    // Handle click on a lead list item
+    $("#leadListItems").on("click", "li", function () {
+      var selectedLeadName = $(this).text();
+      var selectedLeadId = $(this).attr('data-lead-id');
+      $("#id_lead").val(selectedLeadName); // Set the selected lead name as the input value
+      $("#id_lead_id").val(selectedLeadId); // Set the selected lead ID as the input value for lead ID
+      $('#leadList').hide();
+    });
+  });
+</script>

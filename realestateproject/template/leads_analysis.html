@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <center><h1>Leads Analysis</h1></center>
+
+    <div class="chart-container">
+        <div class="row">
+            <div class="chart">
+                <h2>Lead Status Chart</h2>
+                <canvas id="leadStatusChart"></canvas>
+            </div>
+            <div class="chart">
+                <h2>Lead Source Chart</h2>
+                <canvas id="leadSourceChart"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="chart">
+                <h2>Follow-up Action Chart</h2>
+                <canvas id="followUpActionChart"></canvas>
+            </div>
+            <div class="chart">
+                <h2>Time-based Chart</h2>
+                <canvas id="timeBasedChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    
+
+
+
+    <script>
+        // Get the chart data passed from the view
+        var statusData = JSON.parse('{{ status_data | safe }}');
+        var sourceData = JSON.parse('{{ source_data | safe }}');
+        var actionData = JSON.parse('{{ action_data | safe }}');
+        var assignmentData = JSON.parse('{{ assignment_data | safe }}');
+        var timeData = JSON.parse('{{ time_data | safe }}');
+    
+        // Chart configurations
+        var chartConfig = {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Count',
+                    data: [],
+                    backgroundColor: 'rgba(135, 206, 235, 0.5)',
+                    borderColor: 'rgba(135, 206, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        };
+    
+        // Create Lead Status Chart
+        var statusChartConfig = Object.assign({}, chartConfig);
+        statusChartConfig.type = 'bar';
+        statusChartConfig.data.labels = statusData.map(item => item.status);
+        statusChartConfig.data.datasets[0].data = statusData.map(item => item.count);
+        statusChartConfig.data.datasets[0].backgroundColor = [
+            'rgba(135, 206, 235, 0.5)',
+            'rgba(152, 251, 152, 0.5)',
+            'rgba(255, 160, 122, 0.5)',
+            'rgba(255, 218, 185, 0.5)'
+        ];
+        statusChartConfig.data.datasets[0].borderColor = [
+            'rgba(135, 206, 235, 1)',
+            'rgba(152, 251, 152, 1)',
+            'rgba(255, 160, 122, 1)',
+            'rgba(255, 218, 185, 1)'
+        ];
+        new Chart(document.getElementById('leadStatusChart'), statusChartConfig);
+    
+        // Create Lead Source Chart
+        var sourceChartConfig = Object.assign({}, chartConfig);
+        sourceChartConfig.type = 'pie';
+        sourceChartConfig.data.labels = sourceData.map(item => item.source);
+        sourceChartConfig.data.datasets[0].data = sourceData.map(item => item.count);
+        sourceChartConfig.data.datasets[0].backgroundColor = [
+            'rgba(135, 206, 235, 0.5)',
+            'rgba(152, 251, 152, 0.5)',
+            'rgba(255, 160, 122, 0.5)',
+            'rgba(255, 218, 185, 0.5)',
+            'rgba(255, 182, 193, 0.5)',
+            'rgba(70, 130, 180, 0.5)'
+        ];
+        sourceChartConfig.data.datasets[0].borderColor = [
+            'rgba(135, 206, 235, 1)',
+            'rgba(152, 251, 152, 1)',
+            'rgba(255, 160, 122, 1)',
+            'rgba(255, 218, 185, 1)',
+            'rgba(255, 182, 193, 1)',
+            'rgba(70, 130, 180, 1)'
+        ];
+        new Chart(document.getElementById('leadSourceChart'), sourceChartConfig);
+    
+        // Create Follow-up Action Chart
+        var actionChartConfig = Object.assign({}, chartConfig);
+        actionChartConfig.type = 'pie';
+        actionChartConfig.data.labels = actionData.map(item => item.follow_up_actions);
+        actionChartConfig.data.datasets[0].data = actionData.map(item => item.count);
+        actionChartConfig.data.datasets[0].backgroundColor = [
+            'rgba(135, 206, 235, 0.5)',
+            'rgba(152, 251, 152, 0.5)',
+            'rgba(255, 160, 122, 0.5)',
+            'rgba(255, 218, 185, 0.5)',
+            'rgba(255, 182, 193, 0.5)'
+        ];
+        actionChartConfig.data.datasets[0].borderColor = [
+            'rgba(135, 206, 235, 1)',
+            'rgba(152, 251, 152, 1)',
+            'rgba(255, 160, 122, 1)',
+            'rgba(255, 218, 185, 1)',
+            'rgba(255, 182, 193, 1)'
+        ];
+        new Chart(document.getElementById('followUpActionChart'), actionChartConfig);
+    
+  
+        // Create Time-based Chart
+        var timeChartConfig = {
+            type: 'line',
+            data: {
+                labels: timeData.map(item => item.date_str),
+                datasets: [{
+                    label: 'Leads Generated',
+                    data: timeData.map(item => item.count),
+                    backgroundColor: 'rgba(135, 206, 235, 0.5)',
+                    borderColor: 'rgba(70, 130, 180, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        };
+        new Chart(document.getElementById('timeBasedChart'), timeChartConfig);
+    </script>
+    
+    
+    
+{% endblock %}

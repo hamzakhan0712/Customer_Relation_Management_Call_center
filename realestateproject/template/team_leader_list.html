@@ -1,0 +1,206 @@
+
+
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- TeamLeaders
+{% endblock %}
+
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="form-container">
+  <form method="get" action="{% url 'team_leader_list' %}">
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="filter" class="form-control"
+          placeholder="Search by name, email, number" value="{{ filter }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+      </div>
+      <div class="">
+        <select name="orderby" class="form-control">
+          <option value="" selected disabled>Select Sorting</option>
+          <option value="id" {% if orderby == 'id' %}selected{% endif %}>Sort by ID</option>
+          <option value="first_name" {% if orderby == 'first_name' %}selected{% endif %}>Sort by First Name</option>
+          <option value="last_name" {% if orderby == 'last_name' %}selected{% endif %}>Sort by Last Name</option>
+          <option value="joining_date" {% if orderby == 'joining_date' %}selected{% endif %}>Sort by Joining Date</option>
+        </select>
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+  <a class="add" href="#" id="leadLink"><i class="fas fa-regular fa-plus"></i> Team Leader</a>
+
+</div>
+
+<div class="modal" id="leadModal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <div class="modal-body">
+      {% include 'team_leader_create.html' %}
+    </div>
+  </div>
+</div>
+
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Joining </th>
+      <th>Profile </th>
+      <th>Full Name</th>
+      <th>Phone Number</th>
+      <th>Address</th>
+      <th>Email</th>
+      <th>Remarks</th>
+      {% if user.role == 1 %}
+      <th>Sales Traget</th>
+      {% endif %}
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for team_leader in object_list %}
+    <tr>
+      <td>{{ team_leader.id }}</td>
+      <td>{{ team_leader.joining_date }}</td>
+      <td>
+        {% if team_leader.profile_pic %}
+        <img src="{{ team_leader.profile_pic.url }}" alt="Profile Picture">
+        {% endif %}
+          
+      </td>
+      <td>{{ team_leader.first_name }} {{ team_leader.last_name }}</td>
+      <td>{{ team_leader.phone_number }}</td>
+      <td>{{ team_leader.address }}</td>
+      <td>{{ team_leader.email }}</td>
+      <td>{{ team_leader.remarks }}</td>
+      {% if user.role == 1 %}
+      <td>
+        <form method="post" id="myForm" action="{% url 'team_leader_update_target' team_leader.pk %}">
+          {% csrf_token %}
+          <input type="text" id="myInput" name="sales_target" value="{{ team_leader.sales_traget }}">
+        </form>
+      </td>
+      {% endif %}
+      <td>
+        <a class="edit-item" href="{% url 'team_leader_update' team_leader.pk %}"><i class="fas fa-edit"></i></a>
+        <a class="remove-item" href="#" data-modal-target="#deleteTeamLeaderModal{{ team_leader.pk }}"><i
+            class="fas fa-trash"></i></a>
+        <div id="deleteTeamLeaderModal{{ team_leader.pk }}" class="modal-delete">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h1>Delete Team Leader</h1>
+            <p>Are you sure you want to delete the Team Leader "{{ team_leader.first_name }} {{ team_leader.last_name }}"?
+            </p>
+            <form method="post" action="{% url 'team_leader_delete' team_leader.pk %}">
+              {% csrf_token %}
+              <a href="{% url 'team_leader_list' %}" class="btn btn-secondary">Cancel</a>
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+      </td>
+      {% empty %}
+    <tr>
+      <td colspan="12">No team leaders found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+<!-- Pagination -->
+<div class="pagination">
+  {% if is_paginated %}
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="current-page">{{ page_obj.number }}</span>
+  <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+  {% endif %}
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#leadLink').click(function (e) {
+      e.preventDefault();
+      $('#leadModal').fadeIn();
+    });
+
+    $('.close').click(function () {
+      $('#leadModal').fadeOut();
+    });
+  });
+  $(document).ready(function () {
+    $('#teamLeaderCreateForm').on('keydown', 'input, select, textarea', function (e) {
+      var self = $(this);
+      var form = self.parents('form:eq(0)');
+      if (e.which === 13) {
+        e.preventDefault();
+        var focusable = form.find('input, select, textarea').filter(':visible');
+        var next = focusable.eq(focusable.index(this) + 1);
+        if (next.length) {
+          next.focus();
+        } else {
+          form.submit();
+        }
+      }
+    });
+  });
+  $(document).ready(function () {
+    // Open modal on remove-item click
+    $('.remove-item').on('click', function (e) {
+      e.preventDefault();
+      var modalTarget = $(this).data('modal-target');
+      $(modalTarget).fadeIn();
+    });
+
+    // Close modal on close button click or outside click
+    $('.modal-delete .close').on('click', function () {
+      var modal = $(this).closest('.modal-delete');
+      modal.fadeOut();
+    });
+
+    $('.modal-content').on('click', function (e) {
+      e.stopPropagation();
+    });
+  });;
+</script>
+
+
+<script>
+  const inputElement = document.getElementById('myInput');
+  const formElement = document.getElementById('myForm');
+
+  inputElement.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+          event.preventDefault();
+          formElement.submit();
+      } else {
+          inputElement.style.borderColor = 'red';
+      }
+  });
+
+  inputElement.addEventListener('keyup', function () {
+      inputElement.style.borderColor = '#ccc';
+  });
+</script>
+
+
+
+
+{% endblock %}

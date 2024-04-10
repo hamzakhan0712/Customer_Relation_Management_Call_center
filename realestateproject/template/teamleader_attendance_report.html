@@ -1,0 +1,237 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- TL Attendance Reports
+{% endblock %}
+
+
+
+{% block content %}
+
+<style>
+   .container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 10px;
+    }
+    .top-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 5rem;
+    }
+
+    .teamleader-details {
+        flex: 1; 
+    }
+
+    .pie-chart-container {
+        flex: 2;
+        margin-top: 2rem;
+    }
+
+    .teamleader-details .row {
+        display: flex;
+        margin-bottom: 10px;
+    }
+
+    .teamleader-details .label {
+        flex: 0 0 40%;
+        font-weight: bold;
+    }
+
+    .teamleader-details .value {
+        flex: 0 0 60%;
+    }
+
+    .data-count-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+    }
+
+    .data-count-table th,
+    .data-count-table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .data-count-table th {
+        background-color: #f2f2f2;
+    }
+
+    .data-count-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+
+</style>
+<br>
+<br>
+<br>
+<div class="container">
+    <div class="record">
+        <div class="form-container">
+            <form method="get" action="">
+                <div class="form-row align-items-center">
+                    <div class="col">
+             
+                        <input type="date" name="teamleader_date_from" class="form-control" id="teamleader_date_from" value="{{ teamleader_date_from }}">
+                    </div>
+                    <div class="col">
+                
+                        <input type="date" name="teamleader_date_to" class="form-control" id="teamleader_date_to" value="{{ teamleader_date_to }}">
+                    </div>
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                   
+                </div>
+                <div class="col">
+                    <a href="?sort=date" class="btn">Sort by Date</a>
+                    <a href="?sort=status" class="btn">Sort by Status</a>
+                    <a href="?filter=today" class="btn">Today</a>
+                    <a href="?filter=this_week" class="btn">This Week</a>
+                    <a href="?filter=this_month" class="btn">This Month</a>
+                    <a href="?filter=6_months" class="btn">Last 6 Months</a>
+                    <a href="?filter=this_year" class="btn">This Year</a>
+
+                </div>
+                <br>
+                <a href="{% url 'export_teamleader_attendance' teamleader.id %}?filter={{ request.GET.filter }}" class=""><i class="uil uil-export"></i> Export Report</a>
+            </form>
+        </div>
+
+        <table>    
+            <tr style="text-align:left;" >
+                <th>TeamLeader Name</th>
+                <th>Phone Number</th>
+                <th>Total Working Days</th>
+                <th>Days Present</th>
+                <th>Days Late</th>
+                <th>Days Absent</th>
+            </tr>
+            <tr>
+                <td>{{ team_leader.team_leader.first_name }} {{ team_leader.team_leader.last_name }}</td>
+                <td>{{ teamleader.phone_number }}</td>
+                <td>{{ total_working_days }} Day</td>
+                <td>{{ present_attendance|length }} Day</td>
+                <td>{{ late_attendance|length }} Day</td>
+                <td>{{ absent_attendance|length }} Day</td>
+            </tr>
+        </table> 
+        <br>
+        <table>
+            <tr style="text-align:left; margin-bottom: 10px;" >
+                <th>Date</th>
+                <th>Status</th>
+                <th>Working Place</th>
+                <th>Login Time</th>
+                <th>Logout Time</th>
+              
+            </tr>
+            {% for record in attendance %}
+            <tr>
+                <td>{{ record.date }}</td>
+                <td>{{ record.status }}</td>
+                <td>{{ record.working_place }}</td>
+                <td>{{ record.login_time|default_if_none:"N/A"|time }}</td>
+                <td>{{ record.logout_time|default_if_none:"N/A"|time }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+            <td colspan="12">No Results found.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <br>
+    <br>
+    <h1 style="margin-top: 20px; text-align: center;" >TeamLeader Attendance Report</h1>
+    <div class="top-row">
+        <div class="teamleader-details">
+            <div class="row">
+                <div class="label">TeamLeader ID:</div>
+                <div class="value">{{ teamleader.id }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Joining Date:</div>
+                <div class="value">{{ teamleader.joining_date }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Full Name:</div>
+                <div class="value">{{ teamleader.first_name }} {{ teamleader.last_name }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Phone Number:</div>
+                <div class="value">{{ teamleader.phone_number }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Email:</div>
+                <div class="value">{{ teamleader.email }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Address:</div>
+                <div class="value">{{ teamleader.address }}</div>
+            </div>
+           
+            <table class="data-count-table">
+                <tr>
+                    <th>Sections</th>
+                    <th>Count</th>
+                </tr>
+                <tr>
+                    <td>Present Days</td>
+                    <td>{{ present_attendance|length }} Day</td>
+                </tr>
+                <tr>
+                    <td>Late Days</td>
+                    <td>{{ late_attendance|length }} Day</td>
+                </tr>
+                <tr>
+                    <td>Absent Days</td>
+                    <td>{{ absent_attendance|length }} Day</td>
+                </tr>
+            </table>
+        </div>
+        <div class="pie-chart-container">
+            <canvas id="attendancePieChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+    <script>
+        // JavaScript code for pie chart
+        const presentCount = {{ present_attendance.count }};
+        const absentCount = {{ absent_attendance.count }};
+        const lateCount = {{ late_attendance.count }};
+
+        // Pie chart data
+        const pieData = {
+            labels: ['Present', 'Absent', 'Late'],
+            datasets: [{
+                data: [presentCount, absentCount, lateCount],
+                backgroundColor: ['rgba(54, 162, 235, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(75, 192, 192, 0.2)'],
+                borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)', 'rgba(75, 192, 192, 1)'],
+                borderWidth: 1
+            }]
+        };
+
+        // Pie chart options
+        const pieOptions = {
+            responsive: true
+        };
+
+        // Create the pie chart
+        const pieCtx = document.getElementById('attendancePieChart').getContext('2d');
+        const attendancePieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: pieData,
+            options: pieOptions
+        });
+        
+    </script>
+{% endblock %}

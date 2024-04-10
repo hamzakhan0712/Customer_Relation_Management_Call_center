@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Edit Agent
+{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+  <form class="update-form" method="post" enctype="multipart/form-data">
+    <h2>Update Agent</h2>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="update-bottom-btns">
+      <button type="submit" class="btn btn-primary">Update</button>
+      <a href="{% url 'agent_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

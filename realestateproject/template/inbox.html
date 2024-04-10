@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+
+<style>
+  
+.inbox-container{
+    width: 70%;
+    height: auto;
+    margin: auto;
+    box-shadow: 0 0 5px #333333;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.notice-container{
+    max-height: 85vh;
+    overflow: scroll;
+    margin: auto;
+    margin-top: .5rem;
+    padding: 0 10px;
+}
+
+.notice-container::-webkit-scrollbar {
+  width: 6px;
+  background-color: white;
+}
+
+.notice-container::-webkit-scrollbar-thumb {
+  background-color: #00041d;
+  border-radius: 3px;
+}
+
+
+.notice-count{
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    color: blue;
+    text-align: right;
+    font-size: 16px;
+    padding:  10px;
+
+}
+
+.notice-count i{
+    font-size: 24px;
+    position: relative;
+}
+
+.count{
+    position: absolute;
+    font-size: 10px;
+    left: -10px;
+    top: -8px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    padding: 5px;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-weight: 600;
+}
+
+
+.notice-item {
+    background-color: #ffffff;
+    border: 2px solid #333333;
+    border-top: none;
+    border-left: none;
+    border-radius: 10px;
+    border-top-left-radius: 0;
+    padding: 15px;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    
+
+}
+
+
+.notice-message {
+    color: #333333;
+    font-size: 16px;
+    width: auto;
+}
+
+.notification-date{
+    width: auto;
+    font-size: 12px;
+    margin-bottom: 5px;
+    
+}
+
+.notification-time{
+    font-size: 12px;
+    color: green;
+    text-align: right;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+</style>
+
+
+<div class="inbox-container" >
+    <div class="notice-count"><i class="uil uil-bell"> <span class="count">{{ notification_count }}</span> </i></div>
+    <ul class="notice-container">
+        {% for notification in notifications %}
+            <li class="notice-item">
+                <div class="notification-date">{{ notification.created_at|date }}</div>
+                <div class="notice-message">{{ notification.message|safe }}</div>
+                <div class="notification-time">{{ notification.created_at|time }}</div>
+            </li>
+        {% empty %}
+            <li class="notice-item">No notifications</li>
+        {% endfor %}
+    </ul>
+</div>
+
+
+{% endblock %}

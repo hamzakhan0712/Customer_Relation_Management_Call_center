@@ -1,0 +1,1008 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- Leads
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+
+.notes{
+  resize: none;
+}
+
+.save-icon {
+  color: blue;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-size: 18px;
+}
+
+.save-icon.updated {
+  color: green;
+}
+
+.save-icon.fa-circle-check-green {
+  color: green;
+}
+
+textarea.changed {
+  border: 1px solid red; 
+}
+
+textarea.updated {
+  border: 1px solid green; 
+}
+
+.list-page.changed {
+  border: 1px solid red;
+}
+
+
+/* CSS for the dropdown container */
+td.icon-container {
+  position: relative;
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+
+}
+
+/* Optional: Style the dropdown toggle button (three dots icon) */
+td.icon-container .dropdown-toggle-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  color: blue;
+}
+
+/* Optional: Style the dropdown menu */
+td.icon-container .dropdown-menu {
+  min-width: 170px;
+  display: none; /* Hide the dropdown menu by default */
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 5px 0;
+  animation: fadeInOut 0.2s ease-in-out; /* Animation for fade-in and fade-out */
+}
+
+/* Show the dropdown menu when it has the 'show' class */
+td.icon-container .dropdown-menu.show {
+  display: block;
+}
+
+/* Optional: Style the dropdown menu items */
+td.icon-container .dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+td.icon-container .dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+td.icon-container .dropdown-item i {
+  margin-right: 5px; /* Optional: Adjust the spacing between icon and text */
+}
+
+/* Optional: Style the checkboxes if needed */
+td.icon-container input[type="checkbox"] {
+  margin: 5px; /* Optional: Adjust the spacing between checkbox and icons */
+}
+
+/* Keyframe animation for fadeInOut */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.follow-up{
+  color: whitesmoke;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+
+.upload-file{
+  display: flex !important;
+}
+
+#csvUploadForm{
+  display: flex !important;
+}
+
+.fa-plus{
+  color: blue;
+}
+
+.custom-file {
+  display: flex;
+  cursor: pointer;
+  color: blue;
+  padding-right: 5px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.custom-file-input {
+  display: none;
+}
+
+.custom-file-label {
+  display: flex;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress {
+  height: 10px; /* Adjust the height of the progress bar */
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+  display: none;
+  width: 20rem;
+  background-color: #f0f0f0; /* Light blue background color */
+}
+
+.progress-bar {
+  height: 50%;
+  width: 0;
+  background-color: blue; /* Blue color for the progress bar */
+  transition: width 0.5s ease-in-out; /* Adjust the transition time for slower animation */
+  min-width: 50px;
+  max-width: 20rem;
+}
+
+/* Add stripes animation */
+.progress-bar.progress-bar-striped {
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15) 10px, transparent 10px, transparent 20px);
+  background-size: 30px 30px;
+}
+
+/* Add animation */
+.progress-bar.progress-bar-animated {
+  animation: progressAnimation 10s linear infinite;
+}
+
+@keyframes progressAnimation {
+  0% { width: 0; }
+  100% { width: 100%; }
+}
+
+.success-message {
+  color: green;
+  display: none;
+  font-weight: bold;
+}
+
+/* Add fade-in animation for the success message */
+.success-message.show {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.file-btn{
+  margin: 0;
+  padding: 0;
+  margin-left: 5px;
+  width: min-content;
+  background: none !important;
+}
+
+.file-btn > i{
+  color: green;
+  font-size: 18px;
+}
+
+
+</style>
+
+<br>
+<br>
+<br>
+  <div class="form-container">
+    <form method="get" action="{% url 'lead_list' %}">
+      <div class="form-row align-items-center">
+        <div class="search">
+          <input type="text" name="filter" class="form-control" placeholder="Search" value="{{ filter }}">
+        </div>
+        <div class="">
+          <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+        </div>
+        <div class="">
+          <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+        </div>
+        <div class="">
+          <select name="status" class="form-control">
+            <option value="" selected disabled>Select Status</option>
+            <option value="new" {% if status == 'new' %}selected{% endif %}>New</option>
+            <option value="contacted" {% if status == 'contacted' %}selected{% endif %}>Contacted</option>
+            <option value="converted" {% if status == 'converted' %}selected{% endif %}>Converted</option>
+            <option value="lost" {% if status == 'lost' %}selected{% endif %}>Lost</option>
+          </select>
+        </div>
+        <div class="">
+          <select name="orderby" class="form-control">
+            <option value="" selected disabled>Select Sorting</option>
+            <option value="id" {% if orderby == 'id' %}selected{% endif %}>Sort by ID</option>
+            <option value="date" {% if orderby == 'date' %}selected{% endif %}>Sort by Date</option>
+            <option value="name" {% if orderby == 'name' %}selected{% endif %}>Sort by Name</option>
+          </select>
+        </div>
+        <div class="">
+          <select name="date_filter" class="form-control">
+            <option value="" selected disabled>Select Filter</option>
+            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+            <option value="this_week" {% if date_filter == 'this_week' %}selected{% endif %}>This Week</option>
+            <option value="this_month" {% if date_filter == 'this_month' %}selected{% endif %}>This Month</option>
+            <option value="last_6_months" {% if date_filter == 'last_6_months' %}selected{% endif %}>Last 6 Months</option>
+            <option value="this_year" {% if date_filter == 'this_year' %}selected{% endif %}>This Year</option>
+          </select>
+        </div>
+        
+        <div class="">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </div>
+    </form>
+  
+    {% if user.role != 3 %}
+    <a class="add" href="#" id="leadLink"><i class="fas fa-regular fa-plus"></i> Lead</a>
+    <a href="#" id="leadexport" class="btn"><i class="uil uil-export"></i> Export Lead</a>
+    <div class="upload-file">
+      <form id="csvUploadForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label class="custom-file" for="csvFileInput"><i class="uil uil-import"></i></label>
+        <span class="custom-file-label">Import</span>
+        <input type="file" class="custom-file-input" name="csv_file" id="csvFileInput" accept=".csv" style="display: none;">
+        <button type="submit" class="file-btn" style="display: none;"><i class="uil uil-check-circle"></i></button>
+      </form>
+      <div class="progress mt-3" style="display: none;">
+        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      <div class="success-message">File Imported Successfully</div>
+    </div>
+    
+<script>
+  $(document).ready(function() {
+    $('#csvFileInput').on('change', function() {
+      var fileName = $(this).val().split('\\').pop();
+      if (fileName) {
+        $('.file-btn').fadeIn(500);
+      } else {
+        $('.file-btn').fadeOut(500);
+        $('.custom-file-label').fadeIn(500);
+      }
+    });
+  });
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#csvUploadForm').on('submit', function(event) {
+      event.preventDefault();
+
+      var formData = new FormData($(this)[0]);
+      var progressBar = $('.progress');
+      var progressBarValue = progressBar.find('.progress-bar');
+
+      // Clear previous error message
+      $('.alert-danger').hide().empty();
+
+      // Disable form and show progress bar
+      $(this).find('input, button').prop('disabled', true);
+      progressBar.show();
+
+      $.ajax({
+        url: '{% url "lead_list" %}',
+        type: 'POST',
+        data: formData,
+        cache: false,
+        contentType: false,
+        processData: false,
+        xhr: function() {
+          var xhr = $.ajaxSettings.xhr();
+          xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+              var percentage = Math.floor((e.loaded / e.total) * 1000);
+              progressBarValue.width(percentage + '%').attr('aria-valuenow', percentage);
+            }
+          };
+          return xhr;
+        },
+        success: function(response) {
+          // If successful, reload the page to display the updated contacts
+          window.location.reload();
+        },
+        error: function(xhr, status, error) {
+          // Show error message and hide progress bar
+          $('.alert-danger').text('Error: ' + error).show();
+          progressBar.hide();
+        },
+        complete: function() {
+          // Enable form and hide progress bar after completion
+          $('#csvUploadForm').find('input, button').prop('disabled', false);
+          progressBar.hide();
+        }
+      });
+    });
+  });
+</script>
+    {% endif %}
+      
+    <!-- Modal -->
+    <div class="modal fade" id="exportLeadModal" tabindex="-1" role="dialog" aria-labelledby="exportLeadModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <span class="close" id="closeFollowUpModal">&times;</span>
+          <div class="modal-body">
+
+           <form method="get" action="{% url 'export_lead_report' %}">
+            <div class="form-row">
+                <div class="col-md-6">
+                    <label for="date_from">From Date:</label>
+                    <input type="date" name="date_from" class="form-control" id="date_from">
+                </div>
+                <div class="col-md-6">
+                    <label for="date_to">To Date:</label>
+                    <input type="date" name="date_to" class="form-control" id="date_to">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="source">Source:</label>
+                <select name="source" class="form-control" id="source">
+                    <option value="">All Sources</option>
+                    <option value="internet">Via Internet</option>
+                    <option value="email">Email Inquiry</option>
+                    <option value="referral">Referral</option>
+                    <option value="social_media">Social Media</option>
+                    <option value="walk_in">Walk-in Customer</option>
+                    <option value="website">Website</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select name="status" class="form-control" id="status">
+                    <option value="">All Statuses</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="converted">Converted</option>
+                    <option value="lost">Lost</option>
+                </select>
+            </div>
+            {% if user.role == 1 %}
+              <div class="form-group">
+                <label for="assigned_to">Assigned To Team Leader:</label>
+                <select name="assigned_to" class="form-control" id="assigned_to">
+                    <option value="">All Team Leaders</option>
+                    {% for lead in assigned_to %}
+                        <option value="{{ teamleader.id }}">{{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <label for="agent">Assigned To Agent:</label>
+                <select name="agent" class="form-control" id="agent">
+                    <option value="">All Agents</option>
+                    {% for lead in assigned_to %}
+                        <option value="{{ teamleader.id }}">{{ lead.assigned_to_agents.first_name }} {{ lead.assigned_to_agents.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Export Leads</button>
+          </form>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+  </div>
+
+
+<script>
+  $(document).ready(function() {
+      $('#leadexport').click(function(e) {
+        e.preventDefault();
+        $('#exportLeadModal').fadeIn();
+      });
+    
+      $('.close').click(function() {
+        $('#exportLeadModal').fadeOut();
+      });
+    });
+</script>
+
+  
+  <div class="modal" id="leadModal">
+    <span class="close">&times;</span>
+    <div class="modal-content">
+      <div class="modal-body">
+        {% include 'lead_create.html' %}
+      </div>
+    </div>
+  </div>
+
+
+  <form method="post" action="{% url 'assign_leads' %}">
+    {% csrf_token %}
+  
+    <div class="right-assign">
+
+      
+      {% if user.role == 1 %}
+      <select name="team_leader" id="team_leader">
+        <option value="">-- Select Team Leader --</option>
+        {% for team_leader in team_leaders %}
+        <option value="{{ team_leader.id }}">{{ team_leader.first_name }} {{ team_leader.last_name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="assign">Assign Lead</button>
+      {% endif %}
+
+      
+      {% if user.role == 2 %}
+      <select name="team_leader" id="team_leader">
+        <option value="">-- Select Team Leader --</option>
+        {% for team_leader in team_leaders %}
+        <option value="{{ team_leader.id }}">{{ team_leader.first_name }} {{ team_leader.last_name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="transfer">Transfer Lead</button>
+
+      <select name="agent" id="agent">
+        <option value="">-- Select Agent --</option>
+        {% for agent in agents %}
+        <option value="{{ agent.id }}">{{ agent.first_name }} {{ agent.last_name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="assign">Assign Lead</button>
+
+      {% endif %}
+        
+      {% if user.role == 3 %}
+      <select name="agent" id="agent">
+        <option value="">-- Select Agent --</option>
+        {% for agent in agents %}
+        <option value="{{ agent.id }}">{{ agent.first_name }} {{ agent.last_name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="transfer">Transfer Lead</button>
+
+      {% endif %}
+        
+    </div>
+  
+    <table class="lead-table">
+      <thead>
+          <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Full Name</th>
+              <th>Contact Number</th>
+              <th>Lead Source</th>
+              <th>Status</th>
+              {% if user.role == 1 %}
+              <th>
+                Disposition <a class="follow-up" id="createFollowUpModalTrigger"><i class="uil uil-plus-circle"></i></a>
+              </th>
+              {% else %}
+                  <th>Disposition</th>
+              {% endif %}
+
+              <th>Notes</th>
+              {% if user.role != 3 %}
+                  <th>Assigned To</th>
+              {% endif %}
+              <th>Reminder</th>
+              <th>Actions</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for lead in object_list %}
+            <tr>
+                <td>{{ lead.id }}</td>
+                <td>{{ lead.date }}</td>
+                <td>{{ lead.name }}</td>
+                <td>{{ lead.contact_info.phone_number }}</td>
+                <td>{{ lead.source }}</td>
+                <td>
+                  <select class="list-page" name="status" id="status-{{ lead.pk }}">
+                    <OPtion value="" selected disabled>Select Status</OPtion>
+                    <option value="new" {% if lead.status == 'new' %}selected{% endif %}>New</option>
+                    <option value="contacted" {% if lead.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                    <option value="converted" {% if lead.status == 'converted' %}selected{% endif %}>Converted</option>
+                    <option value="lost" {% if lead.status == 'lost' %}selected{% endif %}>Lost</option>
+                  </select>
+                </td>
+                <td>         
+                  <select class="list-page" name="follow_up_actions" id="follow-up-actions-{{ lead.pk }}">
+                    <option value="" selected disabled>Select Disposition</option>
+                    <!-- ... Existing follow-up action options ... -->
+                    {% for follow_up in custom_follow_up %}
+                      {% if follow_up.id == lead.follow_up_actions_id %}
+                        <option value="{{ follow_up.id }}" selected>{{ follow_up.name }}</option>
+                      {% else %}
+                        <option value="{{ follow_up.id }}">{{ follow_up.name }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <textarea name="notes" id="notes-{{ lead.pk }}">{{ lead.details }}</textarea>
+                </td>
+                {% if user.role != 3 %}
+                    <td>
+                        {% if user.role == 1 %}
+                            {{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name }} <br>
+                        {% elif user.role == 2 %}
+                            {{ lead.assigned_to_agents.first_name }} {{ lead.assigned_to_agents.last_name }}
+                        {% endif %}
+                    </td>
+                {% endif %}   
+                <td class="reminder-td">
+                  {% if lead.reminders %}
+                    {% for reminder in lead.lead_reminders %}
+                      {% if forloop.last %}
+                        Priority: {{ reminder.priority }}<br>
+                         {{ reminder.reminder_date|date }} <br>
+                         {{ reminder.reminder_date|time }}<br>
+                         {{ reminder.notes }}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                </td>
+                
+                   
+                <td class="icon-container">
+                  <input class="" type="checkbox" name="leadCheckbox" value="{{ lead.pk }}">
+                  <span class="save-icon fa-regular fa-circle-check"></span>
+                  
+                  <div class="dropdown">
+                    <button class="dropdown-toggle-button" type="button" id="dropdownMenuButton">
+                      <i class="fas fa-ellipsis-v"></i> <!-- Three dots icon for dropdown -->
+                    </button>
+                    <div class="dropdown-menu">
+                      <a class="dropdown-item" href="{% url 'lead_reminder' lead.pk %}"><i class="far fa-clock"></i> Set Reminder</a>
+                      <a class="dropdown-item" href="{% url 'lead_follow_up_history' lead.pk %}"><i class="uil uil-info-circle"></i>Follow-up History</a>
+                      
+                      {% if user.role != 3 %}
+                      <a class="dropdown-item edit-item" href="{% url 'lead_update' lead.pk %}"><i class="fa fa-edit"></i> Edit Lead</a>
+                      <a class="dropdown-item delete-lead remove-item" data-lead-id="{{ lead.pk }}"><i class="fas fa-trash"></i> Delete Lead</a>
+                      {% endif %}
+                        
+                    </div>
+                  </div>
+                  
+                </td>         
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="12" >No leads found.</td>
+            </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+</form>
+  
+<!-- The modal structure -->
+<div id="createFollowUpModal" class="modal-delete">
+  <div class="modal-content">
+    <span onclick="closeModal()" class="close" id="closeFollowUpModal">&times;</span>
+    <form id="createFollowUpForm" method="post">
+      {% csrf_token %}
+      <br>
+      <label for="followUpName">New Disposition Option:</label>
+      <input type="text" id="followUpName" name="follow_up_name" required>
+      <button type="submit">Create</button>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal HTML -->
+<div id="confirmationModal" class="modal-delete">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h1>Delete Lead</h1>
+    <p>Are you sure you want to delete this Lead?</p>
+    <a class="btn btn-secondary" id="cancelDelete">Cancel</a>
+    <button id="confirmDelete">Delete</button>
+  </div>
+</div>
+
+
+  <div class="pagination">
+    {% if is_paginated %}
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      <span class="current-page">{{ page_obj.number }}</span>
+      <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    {% endif %}
+  </div>
+
+
+
+<script>
+
+   $(document).ready(function() {
+      $('#leadLink').click(function(e) {
+        e.preventDefault();
+        $('#leadModal').fadeIn();
+      });
+    
+      $('.close').click(function() {
+        $('#leadModal').fadeOut();
+      });
+    });
+
+    $(document).ready(function() {
+      $('#leadCreateForm').on('keydown', 'input, select, textarea', function(e) {
+        var self = $(this);
+        var form = self.parents('form:eq(0)');
+        if (e.which === 13) {
+          e.preventDefault();
+          var focusable = form.find('input, select, textarea').filter(':visible');
+          var next = focusable.eq(focusable.index(this) + 1);
+          if (next.length) {
+            next.focus();
+          } else {
+            form.submit();
+          }
+        }
+      });
+    });
+   
+
+    
+document.querySelectorAll(".delete-lead").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    const leadId = event.currentTarget.getAttribute("data-lead-id"); // Use currentTarget instead of target
+
+
+    // Show the modal dialog
+    const modal = document.getElementById("confirmationModal");
+    modal.style.display = "block";
+
+    // Handle the 'Delete' button click inside the modal
+    const confirmDeleteButton = document.getElementById("confirmDelete");
+    confirmDeleteButton.addEventListener("click", () => {
+      const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+      fetch(`/leads/delete/${leadId}/`, {
+        method: "DELETE",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+      })
+        .then((response) => {
+          if (response.ok) {
+            // Lead deleted successfully
+            // You can show a success message here if you want
+            alert("Lead deleted successfully!");
+            // Hide the modal after successful deletion
+            modal.style.display = "none";
+            // Reload the page to reflect the changes
+            window.location.reload();
+          } else {
+            // Error deleting the lead
+            // You can show an error message here if you want
+            alert("Failed to delete the lead.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    });
+
+    // Handle the 'Cancel' button click inside the modal
+    const cancelDeleteButton = document.getElementById("cancelDelete");
+    cancelDeleteButton.addEventListener("click", () => {
+      // Hide the modal without deleting the lead
+      modal.style.display = "none";
+    });
+
+    // Close modal on close button click or outside click
+    modal.querySelector(".close").addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+    window.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+  });
+});
+
+
+
+
+
+
+
+// JavaScript to handle dropdown toggle
+document.addEventListener('DOMContentLoaded', function() {
+  var dropdownContainers = document.querySelectorAll('.icon-container');
+
+  dropdownContainers.forEach(function(dropdownContainer) {
+    var dropdownToggle = dropdownContainer.querySelector('.dropdown-toggle-button');
+    var dropdownMenu = dropdownContainer.querySelector('.dropdown-menu');
+
+    dropdownToggle.addEventListener('click', function(event) {
+      event.preventDefault();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', function(event) {
+      if (!dropdownContainer.contains(event.target)) {
+        dropdownMenu.classList.remove('show');
+      }
+    });
+  });
+});
+
+
+</script>
+
+
+
+<!-- Place the following JS code either at the end of your HTML file or in a separate .js file -->
+<script>
+  // Get the modal element
+  const modal = document.getElementById('createFollowUpModal');
+
+  // Get the <a> element that triggers the modal
+  const modalTrigger = document.getElementById('createFollowUpModalTrigger');
+
+  // Get the <span> element that closes the modal
+  const modalClose = document.getElementById('closeFollowUpModal');
+
+  // Function to open the modal
+  function openModal() {
+    modal.style.display = 'block';
+  }
+
+  // Function to close the modal
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+
+  // When the user clicks on the link, open the modal
+  modalTrigger.addEventListener('click', openModal);
+
+  // When the user clicks on <span> (x), close the modal
+  modalClose.addEventListener('click', closeModal);
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.addEventListener('click', function(event) {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  // AJAX form submission
+  const createFollowUpForm = document.getElementById('createFollowUpForm');
+
+  createFollowUpForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('{% url "create_custom_follow_up" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Handle successful response if needed
+        console.log('Custom follow-up created:', data.follow_up_id);
+        modal.style.display = 'none'; // Close the modal after successful creation
+      } else {
+        // Handle failure if needed
+        console.error('Failed to create custom follow-up.');
+      }
+    })
+    .catch(error => {
+      // Handle any error that occurs during the AJAX request
+      console.error('Error during AJAX request:', error);
+    });
+  });
+</script>
+
+
+
+<!-- Add the following script after including the Bootstrap library -->
+
+<script>
+  // Wait for the DOM to be ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get all dropdown toggles
+    var dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+  
+    // Add a click event listener to each dropdown toggle
+    dropdownToggles.forEach(function(dropdownToggle) {
+      dropdownToggle.addEventListener('click', function(event) {
+        event.preventDefault();
+  
+        // Toggle the 'show' class on the dropdown menu
+        var dropdownMenu = dropdownToggle.nextElementSibling;
+        dropdownMenu.classList.toggle('show');
+      });
+    });
+  
+    // Close the dropdown menu when clicking outside of it
+    document.addEventListener('click', function(event) {
+      var targetElement = event.target;
+  
+      dropdownToggles.forEach(function(dropdownToggle) {
+        var dropdownMenu = dropdownToggle.nextElementSibling;
+  
+        // Check if the clicked element is outside the dropdown menu and toggle
+        if (dropdownMenu.classList.contains('show') && !dropdownMenu.contains(targetElement)) {
+          dropdownMenu.classList.remove('show');
+        }
+      });
+    });
+  });
+  </script>
+  
+
+<script>
+ 
+ 
+ function handleSaveIconClick(event) {
+  const saveIcon = event.target;
+  const row = saveIcon.closest('tr');
+  const leadId = row.querySelector('td:first-child').innerText;
+  const statusSelect = row.querySelector(`#status-${leadId}`);
+  const followUpSelect = row.querySelector(`#follow-up-actions-${leadId}`);
+  const notesTextArea = row.querySelector(`#notes-${leadId}`);
+
+
+  // Make an AJAX request to update the lead
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '{% url "bulk_lead_update" %}', true);
+  xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+  xhr.setRequestHeader('Content-Type', 'application/json');
+
+  const data = {
+    id: leadId,
+    status: statusSelect.value,
+    follow_up_actions: followUpSelect.value,
+    notes: notesTextArea.value,
+  };
+
+  xhr.onload = function () {
+  if (xhr.status === 200) {
+    // On successful update, display the updated values
+    // and retain the green save icon
+    const response = JSON.parse(xhr.responseText);
+    statusSelect.value = data.status;
+    followUpSelect.value = data.follow_up_actions;
+    // Remove only the 'updated' class to retain the green color
+    saveIcon.classList.remove('updated');
+
+    // Remove the "changed" class from the input elements
+    notesTextArea.classList.remove('changed');
+    statusSelect.classList.remove('changed');
+    followUpSelect.classList.remove('changed');
+  } else {
+    // On error, enable the save icon again
+    saveIcon.style.pointerEvents = 'auto';
+    alert('Error occurred while updating the lead.');
+  }
+};
+
+  xhr.onerror = function () {
+    // On error, enable the save icon again
+    saveIcon.style.pointerEvents = 'auto';
+    alert('Error occurred while updating the lead.');
+  };
+
+  xhr.send(JSON.stringify([data]));
+}
+
+// Attach event listeners to the save icons
+const saveIcons = document.querySelectorAll('.save-icon');
+saveIcons.forEach((saveIcon) => {
+  saveIcon.addEventListener('click', handleSaveIconClick);
+});
+
+// Function to get the CSRF token from the cookie
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+// Add event listeners to track changes in input elements
+const notesTextAreas = document.querySelectorAll('textarea[name="notes"]');
+notesTextAreas.forEach((notesTextArea) => {
+  notesTextArea.addEventListener('input', () => {
+    notesTextArea.classList.add('changed');
+    const row = notesTextArea.closest('tr');
+    const saveIcon = row.querySelector('.save-icon');
+    saveIcon.classList.add('updated');
+  });
+});
+
+const statusSelects = document.querySelectorAll('select[name="status"]');
+statusSelects.forEach((statusSelect) => {
+  statusSelect.addEventListener('change', () => {
+    statusSelect.classList.add('changed');
+    const row = statusSelect.closest('tr');
+    const saveIcon = row.querySelector('.save-icon');
+    saveIcon.classList.add('updated');
+  });
+});
+
+const followUpSelects = document.querySelectorAll('select[name="follow_up_actions"]');
+followUpSelects.forEach((followUpSelect) => {
+  followUpSelect.addEventListener('change', () => {
+    followUpSelect.classList.add('changed');
+    const row = followUpSelect.closest('tr');
+    const saveIcon = row.querySelector('.save-icon');
+    saveIcon.classList.add('updated');
+  });
+});
+
+  const setReminderLink = document.getElementById('set-reminder-link');
+  const remindermodal = document.getElementById('setremindermodal');
+  const closeButton = document.querySelector('.close');
+
+  setReminderLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    remindermodal.style.display = 'block';
+  });
+
+  function closeModal() {
+    remindermodal.style.display = 'none';
+  }
+
+  window.addEventListener('click', function(event) {
+    if (event.target === remindermodal) {
+      remindermodal.style.display = 'none';
+    }
+  });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,460 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+
+
+<br>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Full Name</th>
+            <th>Contact</th>
+            <th>Lead Source</th>
+            <th>Status</th>
+            <th>Disposition</th>
+            <th>Notes</th>
+            {% if user.role != 3 %}
+                <th>Assigned To</th>
+            {% endif %}
+        
+        </tr>
+    </thead>
+    <tbody>
+  
+          <tr>
+              <td>{{ lead.id }}</td>
+              <td>{{ lead.date }}</td>
+              <td>{{ lead.name }}</td>
+              <td>
+                  {{ lead.contact_info.name }} <br>
+                  {{ lead.contact_info.phone_number }} <br>
+                  {{ lead.contact_info.email }}
+              </td>
+              <td>{{ lead.source }}</td>
+              <td>
+                <select class="list-page" name="status" id="status-{{ lead.pk }}">
+                    <option selected>{{ lead.status }}</option>
+                </select>
+              </td>
+              <td>         
+                <select class="list-page" name="follow_up_actions" id="follow-up-actions-{{ lead.pk }}">
+                    <option selected>{{ lead.follow_up_actions.name }}</option>
+                </select>
+                
+              </td>
+              <td>
+                <textarea name="notes" id="notes-{{ lead.pk }}">{{ lead.details }}</textarea>
+              </td>
+              {% if user.role != 3 %}
+                  <td>
+                      {% if user.role == 1 %}
+                          {{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name }} <br>
+                      {% elif user.role == 2 %}
+                          {{ lead.assigned_to_agents.first_name }} {{ lead.assigned_to_agents.last_name }}
+                      {% endif %}
+                  </td>
+              {% endif %}      
+          </tr>
+    </tbody>
+</table>
+
+
+
+<br>
+
+<h2>Follow-up History for {{ lead.name }}</h2>
+<br>
+
+<table>
+    <thead>
+        <tr>
+            <th>Follow-up Date</th>
+            <th>Follow-up Time</th>
+            <th>Employe</th>
+            <th>Follow-up Actions</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for follow_up_entry in follow_up_history_entries %}
+    <tr>
+        <td>{{ follow_up_entry.follow_up_date }}</td>
+        <td>{{ follow_up_entry.follow_up_time }}</td>
+        <td>
+        {% if follow_up_entry.agent %}
+
+            {{ follow_up_entry.agent.first_name }} {{ follow_up_entry.agent.last_name }} (Agent)
+
+        {% elif follow_up_entry.team_leader %}
+
+            {{ follow_up_entry.team_leader.first_name }} {{ follow_up_entry.team_leader.last_name }} (Team Leader)
+
+        {% else %}
+
+            {{ follow_up_entry.admin.username }} (Admin)
+
+        {% endif %}
+        </td>
+        <td>{{ follow_up_entry.follow_up_actions.name }}</td>
+        <td>{{ follow_up_entry.notes }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    
+</table>
+
+
+
+
+<script>
+
+    $(document).ready(function() {
+       $('#leadLink').click(function(e) {
+         e.preventDefault();
+         $('#leadModal').fadeIn();
+       });
+     
+       $('.close').click(function() {
+         $('#leadModal').fadeOut();
+       });
+     });
+     $(document).ready(function() {
+       $('#leadCreateForm').on('keydown', 'input, select, textarea', function(e) {
+         var self = $(this);
+         var form = self.parents('form:eq(0)');
+         if (e.which === 13) {
+           e.preventDefault();
+           var focusable = form.find('input, select, textarea').filter(':visible');
+           var next = focusable.eq(focusable.index(this) + 1);
+           if (next.length) {
+             next.focus();
+           } else {
+             form.submit();
+           }
+         }
+       });
+     });
+    
+ 
+     
+ document.querySelectorAll(".delete-lead").forEach((button) => {
+   button.addEventListener("click", (event) => {
+     event.preventDefault();
+     const leadId = event.currentTarget.getAttribute("data-lead-id"); // Use currentTarget instead of target
+ 
+ 
+     // Show the modal dialog
+     const modal = document.getElementById("confirmationModal");
+     modal.style.display = "block";
+ 
+     // Handle the 'Delete' button click inside the modal
+     const confirmDeleteButton = document.getElementById("confirmDelete");
+     confirmDeleteButton.addEventListener("click", () => {
+       const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+ 
+       fetch(`/leads/delete/${leadId}/`, {
+         method: "DELETE",
+         headers: {
+           "X-CSRFToken": csrfToken,
+         },
+       })
+         .then((response) => {
+           if (response.ok) {
+             // Lead deleted successfully
+             // You can show a success message here if you want
+             alert("Lead deleted successfully!");
+             // Hide the modal after successful deletion
+             modal.style.display = "none";
+             // Reload the page to reflect the changes
+             window.location.reload();
+           } else {
+             // Error deleting the lead
+             // You can show an error message here if you want
+             alert("Failed to delete the lead.");
+           }
+         })
+         .catch((error) => {
+           console.error("Error:", error);
+         });
+     });
+ 
+     // Handle the 'Cancel' button click inside the modal
+     const cancelDeleteButton = document.getElementById("cancelDelete");
+     cancelDeleteButton.addEventListener("click", () => {
+       // Hide the modal without deleting the lead
+       modal.style.display = "none";
+     });
+ 
+     // Close modal on close button click or outside click
+     modal.querySelector(".close").addEventListener("click", () => {
+       modal.style.display = "none";
+     });
+     window.addEventListener("click", (event) => {
+       if (event.target === modal) {
+         modal.style.display = "none";
+       }
+     });
+   });
+ });
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ // JavaScript to handle dropdown toggle
+ document.addEventListener('DOMContentLoaded', function() {
+   var dropdownContainers = document.querySelectorAll('.icon-container');
+ 
+   dropdownContainers.forEach(function(dropdownContainer) {
+     var dropdownToggle = dropdownContainer.querySelector('.dropdown-toggle-button');
+     var dropdownMenu = dropdownContainer.querySelector('.dropdown-menu');
+ 
+     dropdownToggle.addEventListener('click', function(event) {
+       event.preventDefault();
+       dropdownMenu.classList.toggle('show');
+     });
+ 
+     document.addEventListener('click', function(event) {
+       if (!dropdownContainer.contains(event.target)) {
+         dropdownMenu.classList.remove('show');
+       }
+     });
+   });
+ });
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ </script>
+ 
+ 
+ 
+ <!-- Place the following JS code either at the end of your HTML file or in a separate .js file -->
+ <script>
+   // Get the modal element
+   const modal = document.getElementById('createFollowUpModal');
+ 
+   // Get the <a> element that triggers the modal
+   const modalTrigger = document.getElementById('createFollowUpModalTrigger');
+ 
+   // Get the <span> element that closes the modal
+   const modalClose = document.getElementById('closeFollowUpModal');
+ 
+   // When the user clicks on the link, open the modal
+   modalTrigger.onclick = function() {
+     modal.style.display = 'block';
+   };
+ 
+   // When the user clicks on <span> (x), close the modal
+   modalClose.onclick = function() {
+     modal.style.display = 'none';
+   };
+ 
+   // When the user clicks anywhere outside of the modal, close it
+   window.onclick = function(event) {
+     if (event.target === modal) {
+       modal.style.display = 'none';
+     }
+   };
+ 
+   // AJAX form submission
+   const createFollowUpForm = document.getElementById('createFollowUpForm');
+ 
+   createFollowUpForm.addEventListener('submit', function(event) {
+     event.preventDefault();
+     const formData = new FormData(this);
+ 
+     fetch('{% url "create_custom_follow_up" %}', {
+       method: 'POST',
+       body: formData,
+       headers: {
+         'X-CSRFToken': '{{ csrf_token }}',
+       },
+     })
+     .then(response => response.json())
+     .then(data => {
+       if (data.success) {
+         // Handle successful response if needed
+         console.log('Custom follow-up created:', data.follow_up_id);
+         modal.style.display = 'none'; // Close the modal after successful creation
+       } else {
+         // Handle failure if needed
+         console.error('Failed to create custom follow-up.');
+       }
+     })
+     .catch(error => {
+       // Handle any error that occurs during the AJAX request
+       console.error('Error during AJAX request:', error);
+     });
+   });
+ </script>
+ 
+ 
+ 
+ <!-- Add the following script after including the Bootstrap library -->
+ 
+ <script>
+   // Wait for the DOM to be ready
+   document.addEventListener('DOMContentLoaded', function() {
+     // Get all dropdown toggles
+     var dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+   
+     // Add a click event listener to each dropdown toggle
+     dropdownToggles.forEach(function(dropdownToggle) {
+       dropdownToggle.addEventListener('click', function(event) {
+         event.preventDefault();
+   
+         // Toggle the 'show' class on the dropdown menu
+         var dropdownMenu = dropdownToggle.nextElementSibling;
+         dropdownMenu.classList.toggle('show');
+       });
+     });
+   
+     // Close the dropdown menu when clicking outside of it
+     document.addEventListener('click', function(event) {
+       var targetElement = event.target;
+   
+       dropdownToggles.forEach(function(dropdownToggle) {
+         var dropdownMenu = dropdownToggle.nextElementSibling;
+   
+         // Check if the clicked element is outside the dropdown menu and toggle
+         if (dropdownMenu.classList.contains('show') && !dropdownMenu.contains(targetElement)) {
+           dropdownMenu.classList.remove('show');
+         }
+       });
+     });
+   });
+   </script>
+   
+ 
+ 
+ 
+ 
+ 
+ 
+ <script>
+  
+  
+  function handleSaveIconClick(event) {
+   const saveIcon = event.target;
+   const row = saveIcon.closest('tr');
+   const leadId = row.querySelector('td:first-child').innerText;
+   const statusSelect = row.querySelector(`#status-${leadId}`);
+   const followUpSelect = row.querySelector(`#follow-up-actions-${leadId}`);
+   const notesTextArea = row.querySelector(`#notes-${leadId}`);
+ 
+ 
+   // Make an AJAX request to update the lead
+   const xhr = new XMLHttpRequest();
+   xhr.open('POST', '{% url "bulk_lead_update" %}', true);
+   xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+   xhr.setRequestHeader('Content-Type', 'application/json');
+ 
+   const data = {
+     id: leadId,
+     status: statusSelect.value,
+     follow_up_actions: followUpSelect.value,
+     notes: notesTextArea.value,
+   };
+ 
+   xhr.onload = function () {
+   if (xhr.status === 200) {
+     // On successful update, display the updated values
+     // and retain the green save icon
+     const response = JSON.parse(xhr.responseText);
+     statusSelect.value = data.status;
+     followUpSelect.value = data.follow_up_actions;
+     // Remove only the 'updated' class to retain the green color
+     saveIcon.classList.remove('updated');
+ 
+     // Remove the "changed" class from the input elements
+     notesTextArea.classList.remove('changed');
+     statusSelect.classList.remove('changed');
+     followUpSelect.classList.remove('changed');
+   } else {
+     // On error, enable the save icon again
+     saveIcon.style.pointerEvents = 'auto';
+     alert('Error occurred while updating the lead.');
+   }
+ };
+ 
+   xhr.onerror = function () {
+     // On error, enable the save icon again
+     saveIcon.style.pointerEvents = 'auto';
+     alert('Error occurred while updating the lead.');
+   };
+ 
+   xhr.send(JSON.stringify([data]));
+ }
+ 
+ // Attach event listeners to the save icons
+ const saveIcons = document.querySelectorAll('.save-icon');
+ saveIcons.forEach((saveIcon) => {
+   saveIcon.addEventListener('click', handleSaveIconClick);
+ });
+ 
+ // Function to get the CSRF token from the cookie
+ function getCookie(name) {
+   const value = `; ${document.cookie}`;
+   const parts = value.split(`; ${name}=`);
+   if (parts.length === 2) return parts.pop().split(';').shift();
+ }
+ 
+ // Add event listeners to track changes in input elements
+ const notesTextAreas = document.querySelectorAll('textarea[name="notes"]');
+ notesTextAreas.forEach((notesTextArea) => {
+   notesTextArea.addEventListener('input', () => {
+     notesTextArea.classList.add('changed');
+     const row = notesTextArea.closest('tr');
+     const saveIcon = row.querySelector('.save-icon');
+     saveIcon.classList.add('updated');
+   });
+ });
+ 
+ const statusSelects = document.querySelectorAll('select[name="status"]');
+ statusSelects.forEach((statusSelect) => {
+   statusSelect.addEventListener('change', () => {
+     statusSelect.classList.add('changed');
+     const row = statusSelect.closest('tr');
+     const saveIcon = row.querySelector('.save-icon');
+     saveIcon.classList.add('updated');
+   });
+ });
+ 
+ const followUpSelects = document.querySelectorAll('select[name="follow_up_actions"]');
+ followUpSelects.forEach((followUpSelect) => {
+   followUpSelect.addEventListener('change', () => {
+     followUpSelect.classList.add('changed');
+     const row = followUpSelect.closest('tr');
+     const saveIcon = row.querySelector('.save-icon');
+     saveIcon.classList.add('updated');
+   });
+ });
+ 
+ 
+ </script>
+ 
+
+
+
+
+
+
+
+
+
+{% endblock %}

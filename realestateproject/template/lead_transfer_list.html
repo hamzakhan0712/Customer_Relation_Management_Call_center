@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- Lead Transfer
+{% endblock %}
+
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="tab-container">
+    <div class="tab-header">
+      <button class="tab-button {% if active_tab == 0 %}active{% endif %}" onclick="showTab(0)">Agents Leads Transfer</button>
+      {% if user.role != 3 %}
+      <button class="tab-button {% if active_tab == 1 %}active{% endif %}" onclick="showTab(1)">Team Leaders Leads Transfer</button>
+      {% endif %}
+    </div>
+    
+ 
+    <div class="tab-content">
+        <div id="tab-0" class="tab-pane {% if active_tab == 0 %}active{% endif %}">
+          <table class="lead-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Transfer Date</th>
+                <th>Transfer Time</th>
+                <th>Lead</th>
+                <th>From Agent</th>
+                <th>To Agent</th>
+                {% if user.role != 3 %}
+                <th>Actions</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for lead_transfer in object_list %}
+                {% if lead_transfer.from_agent and lead_transfer.to_agent %}
+                <tr>
+                  <td>{{ lead_transfer.id }}</td>
+                  <td>{{ lead_transfer.local_date }}</td>
+                  <td>{{ lead_transfer.local_time }}</td>
+                  <td>{{ lead_transfer.lead.name }}</td>
+                  <td>{{ lead_transfer.from_agent.first_name }} {{ lead_transfer.from_agent.last_name }}</td>
+                  <td>{{ lead_transfer.to_agent.first_name }} {{ lead_transfer.to_agent.last_name }}</td>
+                  {% if user.role != 3 %}
+                  <td>
+                    <form method="post" onsubmit="return confirm('Are you sure you want to delete this transfer?')">
+                      {% csrf_token %}
+                      <input type="hidden" name="delete_transfer" value="{{ lead_transfer.pk }}">
+                      <button type="submit" class="delete-lead-transfer-btn">Delete</button>
+                    </form>
+                  </td>
+                  {% endif %}
+                </tr>
+                {% endif %}
+              {% empty %}
+              <tr>
+                <td colspan="6">No agent to agent lead transfers found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+    
+        <div id="tab-1" class="tab-pane {% if active_tab == 1 %}active{% endif %}">
+          <table class="lead-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Transfer Date</th>
+                <th>Transfer Time</th>
+                <th>Lead</th>
+                <th>From Team Leader</th>
+                <th>To Team Leader</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for lead_transfer in object_list %}
+                {% if lead_transfer.from_team_leader and lead_transfer.to_team_leader %}
+                <tr>
+                  <td>{{ lead_transfer.id }}</td>
+                  <td>{{ lead_transfer.local_date }}</td>
+                  <td>{{ lead_transfer.local_time }}</td>
+                  <td>{{ lead_transfer.lead.name }}</td>
+                  <td>{{ lead_transfer.from_team_leader.first_name }} {{ lead_transfer.from_team_leader.last_name }}</td>
+                  <td>{{ lead_transfer.to_team_leader.first_name }} {{ lead_transfer.to_team_leader.last_name }}</td>
+                  <td>
+                    {% if user.role != 3 %}
+                    <form method="post" onsubmit="return confirm('Are you sure you want to delete this transfer?')">
+                      {% csrf_token %}
+                      <input type="hidden" name="delete_transfer" value="{{ lead_transfer.pk }}">
+                      <button type="submit" class="delete-lead-transfer-btn">Delete</button>
+                    </form>
+                    {% endif %}
+                    <!-- Add any other actions you want to perform on the lead transfer -->
+                  </td>
+                </tr>
+                {% endif %}
+              {% empty %}
+              <tr>
+                <td colspan="12">No team leader to team leader lead transfers found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+
+  <script>
+    $(document).ready(function() {
+      // Function to show the selected tab
+      function showTab(tabIndex) {
+        $('.tab-button').removeClass('active');
+        $('.tab-pane').removeClass('active');
+        $(`#tab-${tabIndex}`).addClass('active');
+        $(`[onclick="showTab(${tabIndex})"]`).addClass('active');
+      }
+  
+      // Default to the first tab
+      showTab(0);
+  
+      // Activate the Bootstrap tabs
+      $('.tab-button').on('click', function (e) {
+        e.preventDefault();
+        var tabIndex = $(this).index();
+        showTab(tabIndex);
+      });
+    });
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+
+
+{% endblock %}

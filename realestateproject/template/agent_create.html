@@ -1,0 +1,125 @@
+<h2>Create Agent</h2>
+<form id="agentCreateForm" method="post" action="{% url 'agent_create' %}" enctype="multipart/form-data">
+   {% csrf_token %}
+  <div class="form-group">
+    <label for="id_username">Username</label>
+    <input type="text" name="username" id="id_username" class="form-control"required>
+      {% for error in form.username.errors %}
+        <p class="error">{{ error }}</p>
+      {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_password">Password</label>
+    <input type="password" name="password" id="id_password" class="form-control"required>
+    {% for error in form.password.errors %}
+    <p class="error">{{ error }}</p>
+    {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_profile_pic">Profile Picture</label>
+    <input type="file" name="profile_pic" id="id_profile_pic" class="form-control"required>
+    {% for error in form.profile_pic.errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_first_name">First Name</label>
+    <input type="text" name="first_name" id="id_first_name" class="form-control"required>
+    {% for error in form.first_name.errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_last_name">Last Name</label>
+    <input type="text" name="last_name" id="id_last_name" class="form-control"required>
+    {% for error in form.last_name.errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_email">Email</label>
+    <input type="email" name="email" id="id_email" class="form-control"required>
+    {% for error in form.email.errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_phone_number">Phone Number</label>
+    <input type="tel" name="phone_number" id="id_phone_number" class="form-control" required>
+    {% for error in form.phone_number.errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_address">Address</label>
+    <textarea name="address" id="id_address" class="form-control" required></textarea>
+
+  </div>
+  <div class="form-group">
+    <label for="id_joining_date">Joining Date</label>
+    <input type="date" name="joining_date" id="id_joining_date" class="form-control"required>
+    {% for error in form.joining_date.errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+  </div>
+  <div class="form-group">
+    <label for="id_remarks">Remarks</label>
+    <textarea name="remarks" id="id_remarks" class="form-control" required></textarea>
+  </div>
+  <div class="form-group">
+    <label for="id_team_leader">Team Leader</label>
+    <select name="team_leader" id="id_team_leader" class="form-control"required>
+      {% if user.role == 2 %}
+      <option selected value="{{ request.user.teamleader.pk }}">{{ request.user.username }}</option>
+      {% else %}
+      <option value="" selected disabled>Select Teamleader</option>
+        {% for team_leader in team_leaders %}
+          <option value="{{ team_leader.pk }}">{{ team_leader.username }}</option>
+        {% endfor %}
+      {% endif %}
+    </select>
+    {% for error in form.team_leader.errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+  </div>
+  <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+    // Function to get the CSRF token from the page's HTML
+    function getCsrfToken() {
+      return $('input[name=csrfmiddlewaretoken]').val();
+    }
+  
+    $('#agentCreateForm input, #agentCreateForm select, #agentCreateForm textarea').on('input', function() {
+      var fieldName = $(this).attr('name');
+      var fieldValue = $(this).val();
+      var errorDiv = $(this).siblings('.error');
+      
+      // Get the CSRF token
+      var csrfToken = getCsrfToken();
+  
+      $.ajax({
+        url: "{% url 'agent_create' %}",
+        method: 'POST',
+        data: { field_name: fieldName, field_value: fieldValue },
+        dataType: 'json',
+        headers: { "X-CSRFToken": csrfToken },  // Include the CSRF token in the headers
+        success: function(response) {
+          if (response.error) {
+            errorDiv.text(response.error);
+          } else {
+            errorDiv.text('');
+          }
+        },
+        error: function() {
+          errorDiv.text('An error occurred while validating the field.');
+        }
+      });
+    });
+  });
+  </script>
+  
+

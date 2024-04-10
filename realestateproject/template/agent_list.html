@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+ 
+{% block title %}
+Horizon- Agents
+{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<style>
+  #myInput {
+    border: 1px solid #ccc;
+    padding: 5px;
+  }
+</style>
+<div class="form-container">
+  <form method="get" action="{% url 'agent_list' %}" class="">
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="filter" class="form-control" placeholder="Search by name " value="{{ filter }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+      </div>
+      <div class="">
+        <select name="orderby" class="form-control">
+          <option value="" selected disabled>Select Sorting</option>
+          <option value="id" {% if orderby == 'id' %}selected{% endif %}>Sort by ID</option>
+          <option value="joining_date" {% if orderby == 'joining_date' %}selected{% endif %}>Sort by Joining Date</option>
+          <option value="phone_number" {% if orderby == 'phone_number' %}selected{% endif %}>Sort by Phone Number</option>
+          <option value="team_leader" {% if orderby == 'team_leader' %}selected{% endif %}>Sort by Team Leader</option>
+        </select>
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+  <a class="add" href="#" id="leadLink"><i class="fas fa-regular fa-plus"></i> Agent</a>
+</div>
+
+<div class="modal" id="leadModal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <div class="modal-body">
+      {% include 'agent_create.html' %}
+    </div>
+  </div>
+</div>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Joining</th>
+      <th>Profile</th>
+      <th>Full Name</th>
+      <th>Phone Number</th>
+      <th>Address</th>
+      <th>Email</th>
+      <th>Remarks</th>
+      {% if user.role != 3 %}
+      <th>Sales Traget</th>
+      {% endif %}
+
+      {% if user.role == 1 %}
+      <th>Team Leader</th>
+
+      {% endif %}
+
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for agent in object_list %}
+    <tr>
+      <td>{{ agent.id }}</td>
+      <td>{{ agent.joining_date }}</td>
+      <td><img src="{{ agent.profile_pic.url }}" alt="Profile Pic"></td>
+      <td>{{ agent.first_name }} {{ agent.last_name }}</td>
+      <td>{{ agent.phone_number }}</td>
+      <td>{{ agent.address }}</td>
+      <td>{{ agent.email }}</td>
+      <td>{{ agent.remarks }}</td>
+      {% if user.role == 1 %}
+      <td>{{ agent.team_leader.first_name }} {{ agent.team_leader.last_name }}</td>
+      {% endif %}
+
+      {% if user.role != 3 %}
+      <td>
+        <form method="post" id="myForm" action="{% url 'agent_update_target' agent.pk %}">
+          {% csrf_token %}
+          <input type="text" id="myInput" name="sales_target" value="{{ agent.sales_traget }}">
+        </form>
+      </td>
+      {% endif %}
+
+      <td>
+        <a class="edit-item" href="{% url 'agent_update' agent.pk %}"><i class="fas fa-edit"></i></a>
+        <a class="remove-item" href="#" data-modal-target="#deleteAgentModal{{ agent.pk }}"><i
+            class="fas fa-trash"></i></a>
+        <div id="deleteAgentModal{{ agent.pk }}" class="modal-delete">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h1>Delete Agent</h1>
+            <p>Are you sure you want to delete the agent "{{ agent.first_name }} {{ agent.last_name }}"?</p>
+            <form method="post" action="{% url 'agent_delete' agent.pk %}">
+              {% csrf_token %}
+              <a href="{% url 'agent_list' %}" class="btn btn-secondary">Cancel</a>
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="12">No agents found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="pagination">
+  {% if is_paginated %}
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="current-page">{{ page_obj.number }}</span>
+  <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+  {% endif %}
+</div>
+
+
+<script>
+  $(document).ready(function () {
+    $('#leadLink').click(function (e) {
+      e.preventDefault();
+      $('#leadModal').fadeIn();
+    });
+
+    $('.close').click(function () {
+      $('#leadModal').fadeOut();
+    });
+  });
+  $(document).ready(function () {
+    $('#agentCreateForm').on('keydown', 'input, select, textarea', function (e) {
+      var self = $(this);
+      var form = self.parents('form:eq(0)');
+      if (e.which === 13) {
+        e.preventDefault();
+        var focusable = form.find('input, select, textarea').filter(':visible');
+        var next = focusable.eq(focusable.index(this) + 1);
+        if (next.length) {
+          next.focus();
+        } else {
+          form.submit();
+        }
+      }
+    });
+  });
+  $(document).ready(function () {
+    // Open modal on remove-item click
+    $('.remove-item').on('click', function (e) {
+      e.preventDefault();
+      var modalTarget = $(this).data('modal-target');
+      $(modalTarget).fadeIn();
+    });
+
+    // Close modal on close button click or outside click
+    $('.modal-delete .close').on('click', function () {
+      var modal = $(this).closest('.modal-delete');
+      modal.fadeOut();
+    });
+
+    $('.modal-content').on('click', function (e) {
+      e.stopPropagation();
+    });
+  });;
+</script>
+
+
+<script>
+  const inputElement = document.getElementById('myInput');
+  const formElement = document.getElementById('myForm');
+
+  inputElement.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      formElement.submit();
+    } else {
+      inputElement.style.borderColor = 'red';
+    }
+  });
+
+  inputElement.addEventListener('keyup', function () {
+    inputElement.style.borderColor = '#ccc';
+  });
+</script>
+
+
+
+{% endblock %}

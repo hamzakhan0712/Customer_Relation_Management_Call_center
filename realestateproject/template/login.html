@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Horizon</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
+</head>
+<body>
+
+  <div class="scontainer">
+
+    {% if messages %}
+    <div class="message-block" id="messageBlock">
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    </div>
+    {% endif %}
+
+    <form action="" id="myform" method="post">
+        <img class="signin-logo" src="{% static 'img/logo.png' %}" alt="">
+        {% csrf_token %}
+        <p id="signin">Sign-In</p>
+        <input type="text" id="username" class="input-signin" name="username" placeholder="Username"
+            onkeydown="moveToNext(event, 'password')" required>
+        <input type="password" class="input-signin" id="password" name="password" placeholder="Password" required>
+        <input class="input-sign-submit" type="submit" value="Submit">
+    </form>
+</div>  
+
+</body>
+<script>
+      document.addEventListener('DOMContentLoaded', function() {
+    var messageBlock = document.getElementById('messageBlock');
+
+    if (messageBlock) {
+      setTimeout(function() {
+        messageBlock.classList.add('slide-out');
+        setTimeout(function() {
+          messageBlock.remove();
+        }, 500);
+      }, 2000);
+    }
+  });
+
+</script>
+</html>
+

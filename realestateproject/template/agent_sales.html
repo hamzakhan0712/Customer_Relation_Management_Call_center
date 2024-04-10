@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Agent Wise Sales
+{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="form-container">
+      <!-- Search Form -->
+      <form method="get" action="{% url 'agent_sales' %}">
+        <div class="form-row align-items-center">
+            <div class="search">
+                <input type="text" name="filter" class="form-control" placeholder="Search Agent" value="{{ filter }}">
+            </div>
+            <div>
+                <select name="orderby" class="form-control">
+                    <option value="" selected disabled>Select Sorting</option>
+                    <option value="sale_amount" {% if orderby == 'sale_amount' %}selected{% endif %}>Sort by Sales Amount</option>
+                    <option value="attendance_percentage" {% if orderby == 'attendance_percentage' %}selected{% endif %}>Sort by Attendance Percentage</option>
+                    <!-- Add more sorting options as needed -->
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<div class="container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Agent Name</th>
+                <th>Team Leader</th>
+                <th>Attendance Percentage</th>
+                <th>Count Leads</th>
+                <th>Lead Conversion (%)</th>
+                <th>Lead Completed</th>
+                <th>Sales Amount</th>
+                <th>Sales Traget</th>
+                <th>Sales Achievement (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for agent_sale in agent_sales_data %}
+            <tr >
+                <td>{{ agent_sale.agent.first_name }} {{ agent_sale.agent.last_name }}</td>
+                <td>{{ agent_sale.team_leader.first_name }} {{ agent_sale.team_leader.last_name }}</td>
+                <td>{{ agent_sale.attendance_percentage }}%</td>
+                <td>{{ agent_sale.count_leads }}</td>
+                <td>{{ agent_sale.lead_conversion|floatformat:2 }}%</td>
+                <td>{{ agent_sale.lead_completed }}</td>
+                <td> ₹{{ agent_sale.sale_amount }}</td>
+                <td> ₹{{ agent_sale.agent.sales_traget }}</td>
+                <td>{{ agent_sale.sales_achievement|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

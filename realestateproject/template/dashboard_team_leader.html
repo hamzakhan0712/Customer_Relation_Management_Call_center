@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+
+{% if show_form %}
+
+    <div id="floating-form-container" class="floating-form-container">
+        <form id="attendance-form" method="POST" action="{% url 'dashboard' %}">
+            {% csrf_token %}
+
+            <div class="form-group-a">
+                <label id="l" for="working_place">Working Place:</label>
+                <select id="working_place" name="working_place">
+                    <option value="Office">Office</option>
+                    <option value="Online">Online</option>
+                  </select>
+                  <p class="leaves">Leaves Taken: {{ leaves_taken }}</p>
+            </div>
+               <!-- Add the "On Leave" checkbox -->
+            <div class="form-group-a">
+                <label for="on_leave">On Leave:</label>
+                <input type="checkbox" id="on_leave" name="on_leave">
+            </div>
+            <button type="submit" class="submit-button">Submit Attendance</button>
+        </form>
+    </div>
+   
+{% endif %}
+
+<script>
+    function setOnLeave() {
+        document.getElementById('on_leave').value = 'On Leave';
+    }
+</script>
+
+
+
+<div class="row-1">
+    <div class="col-1">
+        <div class="team-boxes">
+            <div class="box">
+                <p>Total Sales</p>
+                <p class="box-p"><span class="rupe">₹</span> {{ total_team_leader_sales }} /-</p>
+            </div>
+            <div class="box">
+                <p>Total Paid Customer</p>
+                <p class="box-p">{{ total_paid_customers }} Customer</p>
+            </div>
+            <div class="box">
+                <p>Team's Pending Task</p>
+                <p class="box-p">{{ pending_task_count }} Task</p>
+            </div>
+            <div class="box">
+                <p>Upcoming Events</p>
+                <p class="box-p">{{ upcoming_events.count }} Event</p>
+            </div>
+        </div>
+        <br>
+        
+        <h2>Reminder</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Notes</th>
+                    <th>Priority</th>
+                    <th>Set By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reminder in reminders %}
+                <tr>
+                    <td>{{ reminder.reminder_date }}</td>
+                    <td>{{ reminder.notes }}</td>
+                    <td>{{ reminder.get_priority_display }}</td>
+                    <td>{{ reminder.set_by.username }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No reminders available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Yesterday Achievement</h2>
+        <table style="width: 90%;" border="1">
+            <tr>
+                <th>Lead Contacted</th>
+                <th>New Paid Customers</th>
+                <th>Task Completed</th>
+                <th>Absent Agents</th>
+            </tr>
+            <tr>
+               <td>{{ previous_day_contacted_leads }} Leads</td>
+               <td>{{ previous_day_new_customer }} Customer</td>
+               <td>{{  previous_day_cpmpleted_task }} Task</td>
+               <td> <span style="color: red;" >{{ absent_count }}</span> Agents</td>
+
+
+            </tr>
+
+          
+        </table>
+
+    </div>
+
+    
+    <div class="col-2">
+        <p class="quick-label">Quick Look</p>  
+        <div class="quick">
+            <i  class="fas fa-users"></i> <!-- Font Awesome icon for agents in team -->
+            <p class="q-1">{{ total_agents_count }}</p>
+            <p class="q-2">Agents in Team</p>
+        </div>
+        <div class="quick">
+            <i class="fas fa-address-book"></i> <!-- Font Awesome icon for leads assigned -->
+            <p class="q-1">{{ contacted_leads }}</p>
+            <p class="q-2">Leads Contacted</p>
+        </div> 
+        <div class="quick">
+            <i class="fas fa-hand-holding-usd"></i> <!-- Font Awesome icon for paid customers -->
+            <p class="q-1">{{ pending_paid_customers }}</p>
+            <p class="q-2">Pending Paid Customers</p>
+        </div> 
+        <div class="quick">
+            <i class="fas fa-bullhorn"></i> <!-- Font Awesome icon for marketing campaigns -->
+            <p class="q-1">{{ active_marketing_campaigns }}</p>
+            <p class="q-2">Active Marketing Campaigns</p>
+        </div> 
+        <div class="quick">
+            <i class="fas fa-exclamation-circle"></i> <!-- Font Awesome icon for complaints -->
+            <p class="q-1">{{ complaints_count }}</p>
+            <p class="q-2">Unresolved Complaints</p>
+        </div>   
+    </div>
+    
+</div>
+
+
+<div class="recent-atteandance">
+
+    <div class="follow-up">
+        <h2>Recent Leads Table</h2>
+        <table border="1">
+            <tr>
+                <th>Lead Name</th>
+                <th>Contact Information</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Details</th>
+                <th>Follow-Up Actions</th>
+                <th>Assigned To</th>
+            </tr>
+            {% for lead in recent_leads %}
+            <tr>
+                <td>{{ lead.name }}</td>
+                <td>{{ lead.contact_info.name }} <br> {{ lead.contact_info.email }} <br> {{ lead.contact_info.phone_number }}</td>
+                <td>{{ lead.source }}</td>
+                <td>{{ lead.status }}</td>
+                <td>{{ lead.details }}</td>
+                <td>{{ lead.follow_up_actions.name }}</td>
+                <td>{{ lead.assigned_to_agents.first_name }} {{ lead.assigned_to_agents.last_name }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <div class="attendance-box">
+        <p class="quick-label">My Login : {{ login_time|time }}</p>  
+        <div class="quick"> 
+            <p style="color: green;" class="q-1">{{ present_count }}</p>
+            <p class="q-2">Present Agents</p>
+        </div>
+        <div class="quick"> 
+            <p style="color: orange;" class="q-1">{{ late_count }}</p>
+            <p class="q-2">Agents Late</p>
+        </div> 
+    </div>
+
+</div>
+<br>
+<br>
+
+<div class="recent-box">
+    <h2>Recent Objects Table <span class="tag">(Yesterday & Today)</span></h2>
+    <table border="1">
+        <tr>
+            <th>Agent</th>
+            <th>Paid Customer</th>
+            <th>Contacts</th>
+            <th>Tasks</th>
+        </tr>
+        <tr>
+            <td>{{ recent_agents.count }} Agents</td>
+            <td>{{ recent_paid_customers.count }} Customers</td>
+            <td>{{ recent_contacts.count }} Contacts</td>
+            <td>{{ recent_tasks.count }} Tasks</td>
+        </tr>
+        <tr>
+            <th>Complaints</th>
+            <th>Marketing Campaigns</th>
+            <th>Calendar Event</th>
+            <th></th>
+        </tr>
+        <tr>
+            <td>{{ recent_complaints.count }} Complaints</td>
+            <td>{{ recent_marketing_campaigns.count }} Campaigns</td>
+            <td>{{ recent_calendars.count }} Events</td>
+            <td></td>
+        </tr>
+    </table>
+    
+    
+</div>
+<br>
+<br>
+
+
+
+{% endblock %}
+
+
+

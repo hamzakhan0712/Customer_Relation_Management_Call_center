@@ -1,0 +1,46 @@
+CRM Website Development for Call Center
+
+Pages:
+
+Login / Logout 
+Dashboard 
+Contacts 
+Leads 
+Leads Transfer 
+Paid Customers 
+Tasks 
+Call Logs 
+Team Leaders 
+Agents 
+Team Leader and Agent Attendance 
+Calendar Events 
+Marketing Campaign 
+Analytics 
+Complaints 
+Team Leaders Reports 
+Agents Reports
+Individual Team Leader Attendance 
+Individual Agents Attendance 
+Individual Team Leader Performances 
+Individual Agents Performances 
+My Team 
+Team Attendance 
+My Attendance  
+Profile Settings
+
+Features:
+
+Attendance Marking 
+Break Features
+Lead Assignment and Transfer 
+Contact Import
+Reports Export 
+Dashboard Data Visualization 
+
+Other Work:
+
+Designing UI 
+Testing and Error Handling 
+Database Management 
+
+

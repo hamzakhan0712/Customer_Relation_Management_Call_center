@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Agent Report
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .count{
+        font-size: 16px;
+    }
+    .rupe{
+        font-size: 20px;
+        color: green;
+    }
+</style>
+
+<br>
+<br>
+<h1>Agent Report - {{ agent.first_name }} {{ agent.last_name }}</h1>
+
+<h2>Basic Information:</h2>
+<table border="1">
+    <tr>
+        <th>Joining Date</th>
+        <th>Full Name</th>
+        <th>Phone Number</th>
+        <th>E-mail</th>
+        <th>Address</th>
+        <th>Team Leader</th>
+    </tr>
+    <tr>
+        <td>{{ agent.joining_date }}</td>
+        <td>{{ agent.first_name }} {{ agent.last_name }}</td>
+        <td>{{ agent.phone_number }}</td> 
+        <td>{{ agent.email }}</td>
+        <td>{{ agent.address }}</td>
+        <td>{{ agent.team_leader.first_name }} {{ agent.team_leader.last_name }}</td>
+    </tr>
+</table>
+<br>
+
+<h2>Leads <span class="count">(Total - {{ leads.count }})</span>:</h2>
+<table border="1">
+    <tr>
+        <th>Date</th>
+        <th>Lead Name</th>
+        <th>Source</th>
+        <th>Status</th>
+        <th>Details</th>
+    </tr>
+    {% for lead in leads %}
+        <tr>
+            <td>{{ lead.date }}</td>
+            <td>{{ lead.name }}</td>
+            <td>{{ lead.source }}</td>
+            <td>{{ lead.status }}</td>
+            <td>{{ lead.details }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<br>
+
+<h2>Paid Customers <span class="count">(Total - {{ paid_customers.count }})</span>:</h2>
+<table border="1">
+    <tr>
+        <th>Date</th>
+        <th>Customer Name</th>
+        <th>Payment Method</th>
+        <th>Amount Paid</th>
+        <th>Payment Status</th>
+    </tr>
+    {% for customer in paid_customers %}
+        <tr>
+            <td>{{ customer.payment_date }}</td>
+            <td>{{ customer.related_contact.name }}</td>
+            <td>{{ customer.payment_method }}</td>
+            <td><span class="rupe">₹</span> {{ customer.amount_paid }} /-</td>
+            <td>{{ customer.payment_status }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<br>
+
+<h2>Attendance <span class="count">(Total - {{ leaves_taken.count }})</span>:</h2>
+<table border="1">
+    <tr>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Working Place</th>
+        <th>Login Time</th>
+        <th>Logout Time</th>
+    </tr>
+    {% for attendance in leaves_taken %}
+        <tr>
+            <td>{{ attendance.date }}</td>
+            <td>{{ attendance.status }}</td>
+            <td>{{ attendance.working_place }}</td>
+            <td>{{ attendance.login_time|time }}</td>
+            <td>{{ attendance.logout_time|time }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock %}

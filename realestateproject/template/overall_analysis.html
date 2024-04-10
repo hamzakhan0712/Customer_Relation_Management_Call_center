@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon-    Analysis
+{% endblock %}
+
+{% block content %}
+
+<br>
+<br>
+<br>
+
+<style>
+.chart-table-container {
+  display: flex;
+  margin-bottom: 2rem;
+}
+
+.chart-container {
+  flex: 1; 
+
+}
+
+.charts{
+  display: flex;
+}
+
+.data-table{
+  flex: 1;
+  height: min-content;
+}
+
+
+</style>
+
+<div class="chart-table-container">
+  <table class="data-table" border="1">
+    <tr>
+        <th>Data Category</th>
+        <th>Count</th>
+    </tr>
+
+    <tr>
+        <td>Total Employees</td>
+        <td>{{ total_employees }}</td>
+    </tr>
+    <tr>
+        <td>Total Leads</td>
+        <td>{{ total_leads }}</td>
+    </tr>
+    <tr>
+        <td>Total Complaints</td>
+        <td>{{ total_complaints }}</td>
+    </tr>
+    <tr>
+        <td>Total Marketing Campaigns</td>
+        <td>{{ total_campaigns }}</td>
+    </tr>
+    <tr>
+        <td>Total Paid Customers</td>
+        <td>{{ total_paid_customers }}</td>
+    </tr>
+  </table>
+
+  <div class="chart-container">
+    <canvas id="myBarChart"></canvas>
+</div>
+</div>
+
+<table class="overall_table" border="1">
+  <tr>
+    <th colspan="2">Employee Statistics</th>
+    <th colspan="2">Lead Statistics</th>
+    <th colspan="2">Paid Customer Statistics</th>
+    <th colspan="2">Task Statistics</th>
+    <th colspan="2">Complaint Statistics</th>
+    <th colspan="2">Marketing Campaign Statistics</th>
+  </tr>
+  <tr>
+    <td>Total Team Leaders</td>
+    <td>{{ total_team_leaders }}</td>
+
+    <td>Total Leads</td>
+    <td>{{ total_leads }}</td>
+
+    <td>Total Paid Customers</td>
+    <td>{{ total_paid_customers }}</td>
+
+    <td>Total Tasks</td>
+    <td>{{ total_tasks }}</td>
+
+    <td>Total Complaints</td>
+    <td>{{ total_complaints }}</td>
+
+    <td>Total Campaigns</td>
+    <td>{{ total_campaigns }}</td>
+
+  </tr>
+  <tr>
+    <td>Total Agents</td>
+    <td>{{ total_agents }}</td>
+
+    <td>Leads New</td>
+    <td>{{ leads_by_status_new }}</td>
+
+    <td>Pending Paid Customers</td>
+    <td>{{ paid_customers_by_status_pending }}</td>
+
+    <td>Pending Tasks</td>
+    <td>{{ tasks_by_status_pending }}</td>
+
+    <td>Resolved Complaints</td>
+    <td>{{ resolved_complaints }}</td>
+
+    <td>Active Campaigns</td>
+    <td>{{ campaigns_by_status_active }}</td>
+
+  </tr>
+  <tr>
+    <td colspan="2"></td>
+
+    <td>Leads Contacted</td>
+    <td>{{ leads_by_status_contacted }}</td>
+
+    <td>Completed Paid Customers</td>
+    <td>{{ paid_customers_by_status_completed }}</td>
+
+    <td>Completed Tasks</td>
+    <td>{{ tasks_by_status_completed }}</td>
+    
+    <td>Unresolved Complaints</td>
+    <td>{{ unresolved_complaints }}</td>
+
+    <td>Paused Campaigns</td>
+    <td>{{ campaigns_by_status_paused }}</td>
+  </tr>
+  <tr>
+    <td colspan="2"></td>
+
+    <td>Leads Converted</td>
+    <td>{{ leads_by_status_converted }}</td>
+
+    <td>Refunded Paid Customers</td>
+    <td>{{ paid_customers_by_status_refunded }}</td>
+
+    <td>In Progess Tasks</td>
+    <td>{{ tasks_by_status_in_progress }}</td>
+
+    <td colspan="2"></td>
+
+    <td>Completed Campaigns</td>
+    <td>{{ campaigns_by_status_completed }}</td>
+  </tr>
+  <tr>
+    <td colspan="2"></td>
+
+    <td>Leads Lost</td>
+    <td>{{ leads_by_status_lost }}</td>
+
+    <td>Cancelled Paid Customers</td>
+    <td>{{ paid_customers_by_status_cancelled }}</td>
+
+    <td>Cancelled Tasks</td>
+    <td>{{ tasks_by_status_cancelled }}</td>
+  
+    
+    <td colspan="2"></td>
+
+    <td colspan="2"></td>
+
+  </tr>
+</table>
+<br>
+
+<div class="chart-container">
+  <canvas id="statusChart"></canvas>
+</div>
+
+
+<script>
+    // Get the data from the JSON-encoded context variable
+    var chartData = JSON.parse('{{ chart_data_json|escapejs }}');
+
+    // Create the bar chart
+    var ctx = document.getElementById('statusChart').getContext('2d');
+    var salesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Total',
+                data: chartData.data,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+
+  
+
+  // Get the data from your view or set it here manually
+  var totalEmployees = {{ total_employees }};
+  var totalLeads = {{ total_leads }};
+  var totalComplaints = {{ total_complaints }};
+  var totalMarketingCampaigns = {{ total_campaigns }};
+  var totalPaidCustomers = {{ total_paid_customers }};
+
+  // Create the bar chart
+  var ctx = document.getElementById('myBarChart').getContext('2d');
+  var myBarChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+          labels: ['Employees', 'Leads', 'Complaints', 'Marketing Campaigns', 'Paid Customers'],
+          datasets: [{
+              label: 'Count',
+              data: [totalEmployees, totalLeads, totalComplaints, totalMarketingCampaigns, totalPaidCustomers],
+              backgroundColor: [
+                  'rgba(255, 99, 132, 0.2)',
+                  'rgba(54, 162, 235, 0.2)',
+                  'rgba(255, 206, 86, 0.2)',
+                  'rgba(75, 192, 192, 0.2)',
+                  'rgba(153, 102, 255, 0.2)',
+              ],
+              borderColor: [
+                  'rgba(255, 99, 132, 1)',
+                  'rgba(54, 162, 235, 1)',
+                  'rgba(255, 206, 86, 1)',
+                  'rgba(75, 192, 192, 1)',
+                  'rgba(153, 102, 255, 1)',
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+          scales: {
+              y: {
+                  beginAtZero: true
+              }
+          }
+      }
+  });
+
+
+</script>
+
+
+
+{% endblock %}
+
+

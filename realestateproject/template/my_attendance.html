@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="search-container">
+  </div>
+  <table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Work From</th>
+            <th>Login Time</th>
+            <th>Logout Time</th>
+            <th>Status</th>
+            <th>Leaves</th>
+            <th style="text-align: center;">Breaks</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if request.user.role == 2 %} {# Team Leader #}
+            {% for attendance in current_team_leader_attendance %}
+            <tr>
+                <td>{{ attendance.date }}</td>
+                <td>{{ attendance.working_place }}</td>
+                <td>{{ attendance.login_time|time }}</td>
+                <td>{{ attendance.logout_time|time }}</td>
+                <td {% if attendance.status == 'Absent' %}class="status-absent"{% elif attendance.status == 'Present' %}class="status-present"{% elif attendance.status == 'Late' %}class="status-late"{% endif %}>{{ attendance.status }}</td>
+                <td>
+                    {% if attendance.leaves_taken %}
+                    ON LEAVE
+                    {% else %}
+                    Present
+                    {% endif %}
+                </td>
+                <td>
+                    <table class="sub-table">
+                        <thead>
+                            <tr>
+                                <th>Break Start Time</th>
+                                <th>Break Stop Time</th>
+                                <th>Break Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for break in attendance.breaks %}
+                            <tr>
+                                <td>{{ break.start_time|time }}</td>
+                                <td>{{ break.stop_time|time }}</td>
+                                <td>{{ break.duration }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No breaks recorded.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %} {# Agent #}
+            {% for attendance in current_agent_attendance %}
+            <tr>
+                <td>{{ attendance.date }}</td>
+                <td {% if attendance.status == 'Absent' %}class="status-absent"{% elif attendance.status == 'Present' %}class="status-present"{% elif attendance.status == 'Late' %}class="status-late"{% endif %}>{{ attendance.status }}</td>
+                <td>{{ attendance.working_place }}</td>
+                <td>{{ attendance.login_time|time }}</td>
+                <td>{{ attendance.logout_time|time }}</td>
+                <td>
+                    {% if attendance.leaves_taken %}
+                    On Leave
+                    {% else %}
+                    On Work
+                    {% endif %}
+                </td>
+                <td>
+                    <table class="sub-table">
+                        <thead>
+                            <tr>
+                                <th>Break Start Time</th>
+                                <th>Break Stop Time</th>
+                                <th>Break Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for break in attendance.breaks %}
+                            <tr>
+                                <td>{{ break.start_time|time }}</td>
+                                <td>{{ break.stop_time|time }}</td>
+                                <td>{{ break.duration }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="12">No breaks recorded.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% endfor %}
+        {% endif %}
+    </tbody>
+</table>
+
+{% endblock %}

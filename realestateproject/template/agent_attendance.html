@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- Agents Attendances
+{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="form-container">
+  <form method="get" action="{% url 'agent_attendance' %}" class="">
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="agent_search" class="form-control" placeholder="Search team leader" value="{{ agent_search_query }}">
+      </div>
+      <div class="">
+        <input type="date" name="agent_date_from" class="form-control" placeholder="From Date" value="{{ agent_date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="agent_date_to" class="form-control" placeholder="To Date" value="{{ agent_date_to }}">
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+    <a href="?filter=today" class="btn">Today</a>
+    <a href="?filter=this_week" class="btn">This Week</a>
+    <a href="?filter=this_month" class="btn">This Month</a>
+    <a href="?filter=6_months" class="btn">Last 6 Months</a>
+    <a href="?filter=this_year" class="btn">This Year</a>
+  </form>
+</div>
+
+<table>
+  <thead>
+      <tr>
+          <th>Date</th>
+          <th>Full Name</th>
+          <th>Work From</th>
+          <th>Login Time</th>
+          <th>Logout Time</th>
+          <th>Status</th>
+          <th>Leaves</th>
+          <th style="text-align: center;">Breaks</th>
+      </tr>
+  </thead>
+  <tbody>
+    {% for agent_attendance in object_list %}
+        <tr>
+            <td>{{ agent_attendance.date }}</td>
+            <td>
+              {% if agent_attendance.is_on_break %}
+              {{ agent_attendance.agent.first_name }} {{ agent_attendance.agent.last_name }}
+              {% else %}
+              {{ agent_attendance.agent.first_name }} {{ agent_attendance.agent.last_name }} <br>
+             <span style="color: orange;"> <i class="fas fa-mug-hot"></i> On Break </span> 
+              {% endif %}
+          </td>
+            <td>{{ agent_attendance.working_place }}</td>
+            <td>{{ agent_attendance.login_time|time }}</td>
+            <td>{{ agent_attendance.logout_time|time  }}</td>
+            <td {% if agent_attendance.status == 'Absent' %}class="status-absent"{% elif agent_attendance.status == 'Present' %}class="status-present"{% elif agent_attendance.status == 'Late' %}class="status-late"{% endif %}>{{ agent_attendance.status }}</td>
+            <td>
+              {% if agent_attendance.leaves_taken %}
+              On Leave
+              {% else %}
+              On Work
+              {% endif %}
+          </td>
+            <td>
+                {% if agent_attendance.break_objects %}
+                    <table>
+                        <tr>
+                            <th>Break Start Time</th>
+                            <th>Break Stop Time</th>
+                            <th>Break Duration</th>
+                        </tr>
+                        {% for break_object in agent_attendance.break_objects %}
+                            <tr>
+                                <td>{{ break_object.start_time.time|default:"N/A" }}</td>
+                                <td>{{ break_object.stop_time.time|default:"N/A" }}</td>
+                                <td>{{ break_object.duration|default:"N/A" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    No Breaks found 
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="12">No Agent Attendance found.</td>
+        </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+<div class="pagination">
+  {% if is_paginated %}
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="current-page">{{ page_obj.number }}</span>
+  <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+  {% endif %}
+</div>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

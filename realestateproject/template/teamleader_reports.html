@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Horizon- TL Reports
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+  td.teamleader-name {
+    position: relative;
+  }
+
+  td.teamleader-name .dropdown-toggle-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    color: #777777;
+    text-align: right;
+  }
+
+  td.teamleader-name .dropdown-menu {
+    min-width: 170px;
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 5px 0;
+    animation: fadeInOut 0.2s ease-in-out;
+  }
+
+  /* Show the dropdown menu when it has the 'show' class */
+  td.teamleader-name .dropdown-menu.show {
+    display: block;
+  }
+
+  /* Style the dropdown menu items */
+  td.teamleader-name .dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    margin-bottom: 5px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+
+  td.teamleader-name .dropdown-item:hover {
+    background-color: #f5f5f5;
+  }
+
+  td.teamleader-name .dropdown-item i {
+    margin-right: 5px;
+  }
+
+  /* Keyframe animation for fadeInOut */
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+</style>
+
+<br>
+<br>
+<br>
+<div class="form-container">
+  <form method="get" action="{% url 'teamleader_reports' %}">
+    <!-- Form inputs for filtering and searching -->
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="teamleader_search" class="form-control" placeholder="Search By Team Leader"
+          value="{{ teamleader_search_query }}">
+      </div>
+      <div class="">
+        <input type="date" name="teamleader_date_from" class="form-control" placeholder="Joining Date From"
+          value="{{ teamleader_date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="teamleader_date_to" class="form-control" placeholder="Joining Date To"
+          value="{{ teamleader_date_to }}">
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+  <a href="{% url 'export_teamleader_reports' %}" class="btn btn-primary"><i class="uil uil-export"></i> Export
+    Report</a>
+
+</div>
+
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Joining Date</th>
+      <th>TeamLeader Name</th>
+      <th>Team Agents</th>
+      <th>Leads Converted</th>
+      <th>Paid Customers</th>
+      <th>Tasks Completed</th>
+      <th>Resolved Complaints</th>
+      <th>Working Days</th>
+      <th>Leaves Taken</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for teamleader_info in teamleader_data %}
+    <tr>
+      <td>{{ teamleader_info.teamleader.joining_date }}</td>
+      <td>{{ teamleader_info.teamleader.first_name }} {{ teamleader_info.teamleader.last_name }}</td>
+      <td>{{ teamleader_info.team_agents.count }} Agents</td>
+      <td>{{ teamleader_info.leads.count }} Leads</td>
+      <td>{{ teamleader_info.paid_customers.count }} Customers</td>
+      <td>{{ teamleader_info.tasks.count }} Task</td>
+      <td>{{ teamleader_info.complaints.count }} Complaints</td>
+      <td>{{ teamleader_info.working_days.count }} Days</td>
+      <td>{{ teamleader_info.leaves_taken.count }} Leaves</td>
+      <td class="teamleader-name">
+        <div class="dropdown">
+          <button class="dropdown-toggle-button" type="button"
+            id="dropdownMenuButton{{ teamleader_info.teamleader.id }}">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ teamleader_info.teamleader.id }}">
+            <a class="dropdown-item" href="{% url 'teamleader_performance_report' teamleader_info.teamleader.id %}"><i
+                class="fas fa-chart-bar"></i> Performance</a>
+            <a class="dropdown-item" href="{% url 'teamleader_attendance_report' teamleader_info.teamleader.id %}"><i
+                class="fas fa-calendar-check"></i> Attendance</a>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var dropdownContainers = document.querySelectorAll('td.teamleader-name');
+
+    dropdownContainers.forEach(function (dropdownContainer) {
+      var dropdownToggle = dropdownContainer.querySelector('.dropdown-toggle-button');
+      var dropdownMenu = dropdownContainer.querySelector('.dropdown-menu');
+
+      dropdownToggle.addEventListener('click', function (event) {
+        event.preventDefault();
+        dropdownMenu.classList.toggle('show');
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!dropdownContainer.contains(event.target)) {
+          dropdownMenu.classList.remove('show');
+        }
+      });
+    });
+  });
+
+
+
+</script>
+
+{% endblock %}

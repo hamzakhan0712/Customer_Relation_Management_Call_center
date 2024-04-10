@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .container {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    padding: 20px;
+    gap: 20px;
+}
+
+.reminder-form {
+    flex: 1;
+    background-color: #fff;
+    
+   
+}
+
+#reminderForm{
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 20px;
+}
+
+.reminder-history {
+    flex: 2;
+    background-color: #fff;
+    padding: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.reminder-history h2 {
+    margin-bottom: 10px;
+}
+.uil-trash-alt{
+    color: red;
+    cursor: pointer;
+}
+
+.reminder-history a{
+    font-size: 14px;
+    color: red;
+    font-family: Arial, Helvetica, sans-serif;
+    cursor: pointer;
+}
+
+</style>
+
+<br>
+<br>
+<br>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Full Name</th>
+            <th>Contact</th>
+            <th>Lead Source</th>
+            <th>Status</th>
+            <th>Disposition</th>
+            <th>Notes</th>
+            {% if user.role != 3 %}
+                <th>Assigned To</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+          <tr>
+              <td>{{ lead.id }}</td>
+              <td>{{ lead.date }}</td>
+              <td>{{ lead.name }}</td>
+              <td>
+                  {{ lead.contact_info.name }} <br>
+                  {{ lead.contact_info.phone_number }} <br>
+                  {{ lead.contact_info.email }}
+              </td>
+              <td>{{ lead.source }}</td>
+              <td>
+                <select class="list-page" name="status" id="status-{{ lead.pk }}">
+                    <option selected>{{ lead.status }}</option>
+                </select>
+              </td>
+              <td>         
+                <select class="list-page" name="follow_up_actions" id="follow-up-actions-{{ lead.pk }}">
+                    <option selected>{{ lead.follow_up_actions.name }}</option>
+                </select>
+                
+              </td>
+              <td>
+                <textarea name="notes" id="notes-{{ lead.pk }}">{{ lead.details }}</textarea>
+              </td>
+              {% if user.role != 3 %}
+                  <td>
+                      {% if user.role == 1 %}
+                          {{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name }} <br>
+                      {% elif user.role == 2 %}
+                          {{ lead.assigned_to_agents.first_name }} {{ lead.assigned_to_agents.last_name }}
+                      {% endif %}
+                  </td>
+              {% endif %}      
+          </tr>
+    </tbody>
+</table>
+<section class="container">
+    <div class="reminder-form">
+        <h2>Set Reminder </h2>
+        <form id="reminderForm" method="post" action="#">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="reminderDate">Reminder Date</label>
+                <input type="datetime-local" id="reminderDate" name="reminder_date" required>
+            </div>
+            <div class="form-group">
+                <label for="reminderNotes">Notes</label>
+                <textarea id="reminderNotes" name="notes"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    <option value="" selected disabled>Select Priority</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <button type="submit">Save Reminder</button>
+        </form>
+    </div>
+    <div class="reminder-history">
+        <h2>Reminder History for {{ lead.name }} 
+            <a href="{% url 'clear_lead_reminders' lead.pk %}" id="clear-history-button"><i class="uil uil-trash-alt"></i> Clear History</a>
+        </h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Notes</th>
+                    <th>Priority</th>
+                    <th>Set By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reminder in reminders %}
+                <tr>
+                    <td>{{ reminder.reminder_date }}</td>
+                    <td>{{ reminder.notes }}</td>
+                    <td>{{ reminder.get_priority_display }}</td>
+                    <td>{{ reminder.set_by.username }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No reminders available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+
+
+{% endblock %}

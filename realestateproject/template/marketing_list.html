@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Horizon- Campaigns
+{% endblock %}
+
+
+{% block content %}
+<br>
+<br>
+<br>
+<div class="form-container">
+  <form method="get" class="filter-form">
+    <div class="form-row align-items-center">
+      <div class="search">
+        <input type="text" name="filter" class="form-control" placeholder="Search by name or target audience"
+          value="{{ filter }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+      </div>
+      <div class="">
+        <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+      </div>
+      <div class="">
+        <select name="campaign_type" class="form-control">
+          <option value="" selected disabled>Select Type</option>
+          <option value="online" {% if campaign_type == 'online' %}selected{% endif %}>Online</option>
+          <option value="offline" {% if campaign_type == 'offline' %}selected{% endif %}>Offline</option>
+          <option value="social_media" {% if campaign_type == 'social_media' %}selected{% endif %}>Social Media</option>
+          <option value="other" {% if campaign_type == 'other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+      <div class="">
+        <select name="campaign_objective" class="form-control">
+          <option value="" selected disabled>Select Objective</option>
+          <option value="lead_generation" {% if campaign_objective == 'lead_generation' %}selected{% endif %}>Lead
+            Generation</option>
+          <option value="brand_awareness" {% if campaign_objective == 'brand_awareness' %}selected{% endif %}>Brand
+            Awareness</option>
+          <option value="sales_conversion" {% if campaign_objective == 'sales_conversion' %}selected{% endif %}>Sales
+            Conversion</option>
+          <option value="other" {% if campaign_objective == 'other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+      <div class="">
+        <select name="campaign_status" class="form-control">
+          <option value="" selected disabled>Select Status</option>
+          <option value="active" {% if campaign_status == 'active' %}selected{% endif %}>Active</option>
+          <option value="paused" {% if campaign_status == 'paused' %}selected{% endif %}>Paused</option>
+          <option value="completed" {% if campaign_status == 'completed' %}selected{% endif %}>Completed</option>
+        </select>
+      </div>
+      <div class="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+
+  {% if user.role != 3 %}
+  <a class="add" href="#" id="leadLink"><i class="fas fa-regular fa-plus"></i> Campaign</a>
+  {% endif %}
+
+</div>
+
+<div class="modal" id="leadModal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <div class="modal-body">
+      {% include 'marketing_create.html' %}
+    </div>
+  </div>
+</div>
+
+
+<table class="marketing-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Date</th>
+      <th>Name</th>
+      <th>Campaign Type</th>
+      <th>Campaign Objective</th>
+      <th>Campaign Status</th>
+      <th>Target Audience</th>
+      <th>Campaign Budget</th>
+      <th>Campaign Channels</th>
+
+      <th>Actions</th> <!-- Updated column name -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for campaign in object_list %}
+    <tr>
+      <td>{{ campaign.id }}</td>
+      <td>{{ campaign.date }}</td>
+      <td>{{ campaign.name }}</td>
+      <td>{{ campaign.get_campaign_type_display }}</td>
+      <td>{{ campaign.get_campaign_objective_display }}</td>
+      <td>{{ campaign.get_campaign_status_display }}</td>
+      <td>{{ campaign.target_audience }}</td>
+      <td>{{ campaign.campaign_budget }}</td>
+      <td>{{ campaign.campaign_channels }}</td>
+
+      <td>
+        <a class="edit-item" href="{% url 'marketing_update' campaign.pk %}"><i class="fas fa-edit"></i></a>
+        <a class="remove-item" href="#" data-modal-target="#deleteMarketingModal{{ campaign.pk }}"><i
+            class="fas fa-trash"></i></a>
+        <div id="deleteMarketingModal{{ campaign.pk }}" class="modal-delete">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h1>Delete Campaign</h1>
+            <p>Are you sure you want to delete the Campaign "{{ campaign.name }}" ?</p>
+            <form method="post" action="{% url 'marketing_delete' campaign.pk %}">
+              {% csrf_token %}
+              <a href="{% url 'marketing_list' %}" class="btn btn-secondary">Cancel</a>
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="12">No marketing campaigns found.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+
+<div class="pagination">
+  {% if is_paginated %}
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="current-page">{{ page_obj.number }}</span>
+  <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+  {% endif %}
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#leadLink').click(function (e) {
+      e.preventDefault();
+      $('#leadModal').fadeIn();
+    });
+
+    $('.close').click(function () {
+      $('#leadModal').fadeOut();
+    });
+  });
+  $(document).ready(function () {
+    $('#marketingCreateForm').on('keydown', 'input, select, textarea', function (e) {
+      var self = $(this);
+      var form = self.parents('form:eq(0)');
+      if (e.which === 13) {
+        e.preventDefault();
+        var focusable = form.find('input, select, textarea').filter(':visible');
+        var next = focusable.eq(focusable.index(this) + 1);
+        if (next.length) {
+          next.focus();
+        } else {
+          form.submit();
+        }
+      }
+    });
+  });
+  $(document).ready(function () {
+    // Open modal on remove-item click
+    $('.remove-item').on('click', function (e) {
+      e.preventDefault();
+      var modalTarget = $(this).data('modal-target');
+      $(modalTarget).fadeIn();
+    });
+
+    // Close modal on close button click or outside click
+    $('.modal-delete .close').on('click', function () {
+      var modal = $(this).closest('.modal-delete');
+      modal.fadeOut();
+    });
+
+    $('.modal-content').on('click', function (e) {
+      e.stopPropagation();
+    });
+  });;
+</script>
+
+
+
+{% endblock %}

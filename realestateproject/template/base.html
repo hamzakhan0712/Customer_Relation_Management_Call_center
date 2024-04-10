@@ -1,0 +1,69 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js/dist/Chart.min.css">
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/lead_list.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/attendance.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard_teamleader.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard_agent.css' %}">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/Chart.min.js"></script>
+    <script src="https://kit.fontawesome.com/c5af9607d4.js" crossorigin="anonymous"></script>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    var contactInput = $('#id_contact_info');
+    var contactOptions = $('#contact-options');
+    var filterContactsUrl = "{{ filter_contacts_url }}"; // Add this line to get the URL
+
+    contactInput.on('input', function() {
+      var query = contactInput.val().trim();
+
+      if (query.length > 0) {
+        $.ajax({
+          url: filterContactsUrl, // Use the filter_contacts_url variable here
+          data: { query: query },
+          success: function(response) {
+            // ...
+          }
+        });
+      } else {
+        // ...
+      }
+    });
+
+    // ...
+  });
+</script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+<title>
+    {% block title %}
+    
+    {% endblock %}
+</title>
+    {% block custom_css %}
+    {% endblock custom_css %}
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+
+    {% block content %}
+  
+    {% endblock content %}
+</body>
+
+
+{% block custom_js %}
+
+{% endblock custom_js %}
+</html>
+

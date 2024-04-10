@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Horizon- Calendar
+{% endblock %}
+
+{% block content %}
+<br>
+<br>
+<br>
+  <div class="form-container">
+    <form method="get" action="{% url 'calendar_list' %}">
+      <div class="form-row align-items-center">
+        <div class="search">
+          <input type="text" name="filter" class="form-control" placeholder="Search by ID, name, event date" value="{{ filter }}">
+        </div>
+        <div class="">
+          <input type="date" name="date_from" class="form-control" placeholder="Deal Date From" value="{{ date_from }}">
+        </div>
+        <div class="">
+          <input type="date" name="date_to" class="form-control" placeholder="Deal Date To" value="{{ date_to }}">
+        </div>
+        <div class="">
+          <select name="orderby" class="form-control">
+            <option value="" selected disabled>Select Sorting</option>
+            <option value="id" {% if orderby == 'id' %}selected{% endif %}>Sort by ID</option>
+            <option value="event_date" {% if orderby == 'event_date' %}selected{% endif %}>Sort by Event Date</option>
+            <option value="location" {% if orderby == 'location' %}selected{% endif %}>Sort by Location</option>
+          </select>
+        </div>
+        <div class="">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </div>
+      <a href="?filter_by=today" class="btn">Today</a>
+      <a href="?filter_by=this_week" class="btn">This Week</a>
+      <a href="?filter_by=this_month" class="btn">This Month</a>
+      <a href="?filter_by=6_months" class="btn">Last 6 Months</a>
+      <a href="?filter_by=this_year" class="btn">This Year</a>
+    </form>
+    <br>
+    <a class="add" href="#" id="leadLink"><i class="fas fa-regular fa-plus"></i> Reminder</a>
+</div>
+
+<div class="modal" id="leadModal">
+  <span class="close">&times;</span>
+  <div class="modal-content">
+    <div class="modal-body">
+      {% include 'calendar_create.html' %}
+    </div>
+  </div>
+</div>
+
+  <table class="calendar-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Event Date</th>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Reminders</th>
+        <th>Linked Contacts</th>
+        <th>Agent</th>
+        <th>Participants</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for calendar in object_list %}
+        <tr>
+          <td>{{ calendar.id }}</td>
+          <td>{{ calendar.event_date }}</td>
+          <td>{{ calendar.name }}</td>
+          <td>{{ calendar.location }}</td>
+          <td>{{ calendar.reminders }}</td>
+          <td>{{ calendar.related_contact }}</td>
+          <td>{{ calendar.assigned_to.teamleader.first_name }} {{ calendar.assigned_to.teamleader.last_name }}
+              {{ calendar.assigned_to.agent.first_name }} {{ calendar.assigned_to.agent.last_name }}
+          </td>
+          <td>{{ calendar.participants }}</td>
+          <td>{{ calendar.description }}</td>
+          <td>
+            <a class="edit-item" href="{% url 'calendar_update' calendar.pk %}"><i class="fas fa-edit"></i></a>
+            <a class="remove-item" href="#" data-modal-target="#deleteCalendarModal{{ calendar.pk }}"><i class="fas fa-trash"></i></a>
+            <div id="deleteCalendarModal{{ calendar.pk }}" class="modal-delete">
+              <div class="modal-content">
+                <span class="close">&times;</span>
+                <h1>Delete Reminder</h1>
+                <p>Are you sure you want to delete the Reminder "{{ calendar.name }}"?</p>
+                <form method="post" action="{% url 'calendar_delete' calendar.pk %}">
+                  {% csrf_token %}
+                  <a href="{% url 'calendar_list' %}" class="btn btn-secondary">Cancel</a>
+                  <button type="submit">Delete</button>
+                </form>
+              </div>
+            </div>
+        </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="12">No reminders found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <div class="pagination">
+    {% if is_paginated %}
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+      <span class="current-page">{{ page_obj.number }}</span>
+      <span class="total-pages">of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      $('#leadLink').click(function(e) {
+        e.preventDefault();
+        $('#leadModal').fadeIn();
+      });
+    
+      $('.close').click(function() {
+        $('#leadModal').fadeOut();
+      });
+    });
+    $(document).ready(function() {
+      $('#calendarCreateForm').on('keydown', 'input, select, textarea', function(e) {
+        var self = $(this);
+        var form = self.parents('form:eq(0)');
+        if (e.which === 13) {
+          e.preventDefault();
+          var focusable = form.find('input, select, textarea').filter(':visible');
+          var next = focusable.eq(focusable.index(this) + 1);
+          if (next.length) {
+            next.focus();
+          } else {
+            form.submit();
+          }
+        }
+      });
+    });
+    $(document).ready(function() {
+      // Open modal on remove-item click
+      $('.remove-item').on('click', function(e) {
+        e.preventDefault();
+        var modalTarget = $(this).data('modal-target');
+        $(modalTarget).fadeIn();
+      });
+    
+      // Close modal on close button click or outside click
+      $('.modal-delete .close').on('click', function() {
+        var modal = $(this).closest('.modal-delete');
+        modal.fadeOut();
+      });
+    
+      $('.modal-content').on('click', function(e) {
+        e.stopPropagation();
+      });
+    });;
+    
+    
+    </script>
+
+
+
+{% endblock %}

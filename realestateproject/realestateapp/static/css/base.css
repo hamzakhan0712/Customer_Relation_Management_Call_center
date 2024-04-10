@@ -1,0 +1,223 @@
+:root {
+  --color-fade-white: #cacaca;
+  --color-faded-white: #aaaaaa;
+  --color-2-text: #777777;
+  --color-secondary: #FAF1E6;
+  --color-primary: #00041d;
+  --button-color: #0022ff;
+  --received-color: #0022ff88;
+  --sent-color: #0022ff2d;
+  --shade-: #006eff0a;
+}
+
+/* Table Styles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  text-transform: capitalize;
+}
+
+/* Table Header Styles */
+table thead th {
+  background-color: var(--color-2-text);
+  color: #ffffff;
+  padding: 10px;
+  text-align: left;
+  width: min-content;
+}
+
+/* Table Body Styles */
+table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  width: min-content;
+  text-align: left;
+  font-size: 15px;
+}
+
+/* Alternate Row Styles */
+table tbody tr:nth-child(even) {
+  background-color: #f5f5f5;
+  width: min-content;
+}
+
+/* Hover Styles */
+table tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination a {
+  display: inline-block;
+  padding: 8px 12px;
+  text-decoration: none;
+  background-color: #f2f2f2;
+  color: #333;
+  border-radius: 4px;
+  margin: 0 4px;
+  transition: background-color 0.3s ease;
+}
+
+.pagination a:hover {
+  background-color: #ddd;
+}
+
+.pagination .current-page {
+  display: inline-block;
+  padding: 8px 12px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 4px;
+  margin: 0 4px;
+}
+
+.pagination .total-pages {
+  margin-left: 4px;
+  color: #777;
+}
+
+/* Common styles for form elements */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="file"],
+input[type="password"],
+input[type="date"],
+input[type="datetime-local"],
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  margin: 5px !important;
+  font-family: Arial, Helvetica, sans-serif;
+  outline: none;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="file"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+input[type="datetime-local"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.btn-secondary {
+  text-decoration: none;
+  color: red;
+  cursor: pointer;
+}
+
+img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.search {
+  margin-right: 0.5rem !important;
+}
+
+h2 {
+  margin: 5px !important;
+}
+
+button {
+  padding: 5px 8px;
+  border: 1px solid #ffffff;
+  border-radius: 5px;
+  background-color: #0022ff;
+  color: white;
+  cursor: pointer;
+}
+
+.form-group {
+  margin: 5px 0;
+}
+
+.down {
+  color: #0022ff;
+  text-decoration: none;
+}
+
+.status-absent {
+  color: red;
+  font-size: 18px;
+}
+
+.status-present {
+  color: green;
+}
+
+.status-late {
+  color: orange;
+}
+
+.text-success,
+.text-danger,
+.text-primary,
+.text-secondary {
+  color: inherit;
+  font-size: 16px;
+  font-family: Arial;
+}
+
+.text-success {
+  color: green;
+}
+
+.text-danger {
+  color: red;
+}
+
+.text-primary {
+  color: blue;
+}
+
+.text-secondary {
+  color: orange;
+}
+
+a {
+  text-decoration: none;
+}
+
+.update-form {
+  width: 50%;
+  margin: auto;
+  padding: 20px;
+  box-shadow: 0 0 2px #333;
+  border-radius: 5px;
+}
+
+.update-form p {
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+.update-bottom-btns {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  gap: 1rem;
+}
